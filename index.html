@@ -56,6 +56,7 @@ button{
   padding:10px 14px;
   border-radius:10px;
   font-weight:bold;
+  margin:5px 0;
 }
 
 input{
@@ -106,6 +107,18 @@ nav button{
 
 <div class="card" id="prayers"></div>
 
+<!-- 📿 الأذكار -->
+<div class="card" id="athkar" style="display:none">
+  <h2>📿 الأذكار</h2>
+  <button onclick="showAthkar('morning')">أذكار الصباح</button>
+  <button onclick="showAthkar('evening')">أذكار المساء</button>
+  <button onclick="showAthkar('afterPrayer')">بعد الصلاة</button>
+  <button onclick="showAthkar('dua')">أدعية</button>
+
+  <div id="athkarList" style="margin-top:10px"></div>
+</div>
+
+<!-- ⚙️ الإعدادات -->
 <div class="card" id="settings" style="display:none">
   <h3>⚙️ الإعدادات</h3>
   <input id="citySearch" placeholder="اكتب اسم المدينة">
@@ -115,6 +128,7 @@ nav button{
 
 <nav>
   <button onclick="show('prayers')">🕌</button>
+  <button onclick="show('athkar')">📿</button>
   <button onclick="show('settings')">⚙️</button>
 </nav>
 
@@ -130,8 +144,9 @@ function toggleDark(){
 }
 
 function show(id){
-  document.getElementById("prayers").style.display="none";
-  document.getElementById("settings").style.display="none";
+  ["prayers","athkar","settings"].forEach(s=>{
+    document.getElementById(s).style.display="none";
+  });
   document.getElementById(id).style.display="block";
 }
 
@@ -189,8 +204,7 @@ navigator.geolocation.getCurrentPosition(pos=>{
     load(city);
   });
 },()=>{
-  const c=localStorage.getItem("city")||"الرياض";
-  load(c);
+  load(localStorage.getItem("city")||"الرياض");
 });
 
 document.getElementById("citySearch").oninput=e=>{
@@ -208,6 +222,39 @@ document.getElementById("citySearch").oninput=e=>{
     res.appendChild(d);
   });
 };
+
+const ATHKAR={
+  morning:[
+    "أصبحنا وأصبح الملك لله والحمد لله",
+    "اللهم بك أصبحنا وبك أمسينا",
+    "رضيت بالله ربًا وبالإسلام دينًا"
+  ],
+  evening:[
+    "أمسينا وأمسى الملك لله",
+    "اللهم بك أمسينا وبك أصبحنا"
+  ],
+  afterPrayer:[
+    "أستغفر الله (3 مرات)",
+    "سبحان الله 33",
+    "الحمد لله 33",
+    "الله أكبر 34"
+  ],
+  dua:[
+    "ربنا آتنا في الدنيا حسنة",
+    "اللهم إني أسألك العفو والعافية"
+  ]
+};
+
+function showAthkar(type){
+  const box=document.getElementById("athkarList");
+  box.innerHTML="";
+  ATHKAR[type].forEach(t=>{
+    let d=document.createElement("div");
+    d.className="card";
+    d.innerText=t;
+    box.appendChild(d);
+  });
+}
 </script>
 
 </body>
