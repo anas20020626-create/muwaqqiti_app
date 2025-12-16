@@ -7,57 +7,55 @@
 
 <style>
 :root{
-  --dark-bg:#0b2a4a;
-  --dark-text:#d4af37;
-  --light-bg:#d4af37;
-  --light-text:#0b2a4a;
+  --bg-light:#f6e7b2;
+  --text-light:#0a1f44;
+  --card-light:#fff4cc;
+
+  --bg-dark:#0a1f44;
+  --text-dark:#f6e7b2;
+  --card-dark:#132f5b;
+
+  --gold:#d4af37;
 }
 
 body{
   margin:0;
-  font-family:system-ui, sans-serif;
-  background:var(--dark-bg);
-  color:var(--dark-text);
+  font-family:"Tajawal",sans-serif;
+  background:var(--bg-light);
+  color:var(--text-light);
   transition:.3s;
 }
 
-.light{
-  background:var(--light-bg);
-  color:var(--light-text);
+body.dark{
+  background:var(--bg-dark);
+  color:var(--text-dark);
 }
 
 header{
-  text-align:center;
   padding:15px;
+  text-align:center;
   font-size:22px;
   font-weight:bold;
 }
 
-section{
-  display:none;
-  padding:15px;
-}
-
-section.active{
-  display:block;
-}
-
 .card{
-  background:rgba(255,255,255,.08);
+  background:var(--card-light);
+  margin:10px;
   padding:15px;
-  border-radius:15px;
-  margin-bottom:12px;
+  border-radius:14px;
+}
+
+body.dark .card{
+  background:var(--card-dark);
 }
 
 button{
-  width:100%;
-  padding:12px;
+  background:var(--gold);
+  color:#0a1f44;
   border:none;
-  border-radius:12px;
-  background:currentColor;
-  color:inherit;
-  font-size:16px;
-  margin-top:10px;
+  padding:10px 14px;
+  border-radius:10px;
+  font-weight:bold;
 }
 
 input{
@@ -65,7 +63,20 @@ input{
   padding:10px;
   border-radius:10px;
   border:none;
-  margin-top:10px;
+  margin:8px 0;
+}
+
+.prayer{
+  display:flex;
+  justify-content:space-between;
+  padding:8px 0;
+}
+
+.next{
+  border:2px solid var(--gold);
+  border-radius:10px;
+  padding:10px;
+  font-weight:bold;
 }
 
 nav{
@@ -73,8 +84,10 @@ nav{
   bottom:0;
   width:100%;
   display:flex;
-  background:rgba(0,0,0,.25);
+  background:var(--card-light);
 }
+
+body.dark nav{background:var(--card-dark);}
 
 nav button{
   flex:1;
@@ -85,140 +98,116 @@ nav button{
 
 <body>
 
-<header>🕌 مواقيتي</header>
+<header id="cityName">جارٍ تحديد الموقع…</header>
 
-<!-- الصفحة الرئيسية -->
-<section id="home" class="active">
-  <div class="card" id="city">📍 جاري تحديد الموقع...</div>
-  <div id="prayers"></div>
-  <div class="card" id="countdown"></div>
-</section>
+<div class="card">
+  <div id="countdown">⏳</div>
+</div>
 
-<!-- الإعدادات -->
-<section id="settings">
-  <div class="card">
-    <h3>⚙️ الإعدادات</h3>
-    <button onclick="toggleTheme()">🌙 / ☀️ تغيير الوضع</button>
-  </div>
+<div class="card" id="prayers"></div>
 
-  <div class="card">
-    <h3>📍 اختيار المدينة يدويًا</h3>
-    <input id="citySearch" placeholder="اكتب اسم المدينة">
-    <div id="cityResults"></div>
-    <button onclick="useLocation()">📡 استخدام الموقع التلقائي</button>
-  </div>
-</section>
+<div class="card" id="settings" style="display:none">
+  <h3>⚙️ الإعدادات</h3>
+  <input id="citySearch" placeholder="اكتب اسم المدينة">
+  <div id="results"></div>
+  <button onclick="toggleDark()">تبديل الوضع</button>
+</div>
 
 <nav>
-  <button onclick="show('home')">🏠</button>
+  <button onclick="show('prayers')">🕌</button>
   <button onclick="show('settings')">⚙️</button>
 </nav>
 
 <script>
-/* ---------- تنقّل ---------- */
+let prayersData={},cities=[];
+let dark=false;
+
+fetch("cities-sa.json").then(r=>r.json()).then(d=>cities=d);
+
+function toggleDark(){
+  dark=!dark;
+  document.body.classList.toggle("dark");
+}
+
 function show(id){
-  document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
+  document.getElementById("prayers").style.display="none";
+  document.getElementById("settings").style.display="none";
+  document.getElementById(id).style.display="block";
 }
 
-/* ---------- الوضع ---------- */
-function toggleTheme(){
-  document.body.classList.toggle("light");
-  localStorage.setItem("theme",document.body.classList.contains("light"));
+function load(city){
+  document.getElementById("cityName").innerText=city;
+  fetch(`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=SA&method=4`)
+  .then(r=>r.json()).then(d=>{
+    prayersData=d.data.timings;
+    render();
+  });
 }
-if(localStorage.getItem("theme")==="true"){
-  document.body.classList.add("light");
+
+function render(){
+  const order=["Fajr","Dhuhr","Asr","Maghrib","Isha"];
+  const names={Fajr:"الفجر",Dhuhr:"الظهر",Asr:"العصر",Maghrib:"المغرب",Isha:"العشاء"};
+  let now=new Date(),next=null;
+
+  for(let p of order){
+    let [h,m]=prayersData[p].split(":");
+    let t=new Date(); t.setHours(h,m,0);
+    if(t>now){next=p;break;}
+  }
+  if(!next) next="Fajr";
+
+  let html="";
+  order.forEach(p=>{
+    html+=`<div class="prayer ${p===next?"next":""}">
+      <span>${names[p]}</span>
+      <span>${prayersData[p]}</span>
+    </div>`;
+  });
+  document.getElementById("prayers").innerHTML=html;
+  countdown(prayersData[next]);
 }
 
-/* ---------- المدن ---------- */
-let cities=[];
-fetch("cities-sa.json")
-.then(r=>r.json())
-.then(d=>cities=d);
+function countdown(time){
+  setInterval(()=>{
+    let [h,m]=time.split(":");
+    let target=new Date(); target.setHours(h,m,0);
+    let diff=target-new Date();
+    if(diff<0) diff+=86400000;
+    let hrs=Math.floor(diff/3600000);
+    let min=Math.floor(diff%3600000/60000);
+    let sec=Math.floor(diff%60000/1000);
+    document.getElementById("countdown").innerText=
+      `الصلاة القادمة بعد ${hrs}:${min}:${sec}`;
+  },1000);
+}
 
-const search=document.getElementById("citySearch");
-const results=document.getElementById("cityResults");
+navigator.geolocation.getCurrentPosition(pos=>{
+  fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&localityLanguage=ar`)
+  .then(r=>r.json()).then(d=>{
+    const city=d.city||d.locality;
+    localStorage.setItem("city",city);
+    load(city);
+  });
+},()=>{
+  const c=localStorage.getItem("city")||"الرياض";
+  load(c);
+});
 
-search.oninput=()=>{
-  const q=search.value.trim();
-  results.innerHTML="";
-  if(q.length<1) return;
+document.getElementById("citySearch").oninput=e=>{
+  let q=e.target.value;
+  let res=document.getElementById("results");
+  res.innerHTML="";
   cities.filter(c=>c.includes(q)).forEach(c=>{
-    const div=document.createElement("div");
-    div.className="card";
-    div.innerText=c;
-    div.onclick=()=>{
+    let d=document.createElement("div");
+    d.className="card";
+    d.innerText=c;
+    d.onclick=()=>{
       localStorage.setItem("city",c);
-      loadPrayer(c);
-      alert("تم حفظ المدينة");
+      load(c);
     };
-    results.appendChild(div);
+    res.appendChild(d);
   });
 };
-
-/* ---------- المواقيت ---------- */
-function loadPrayer(city){
-  document.getElementById("city").innerText="📍 "+city;
-  fetch(`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=SA&method=4`)
-  .then(r=>r.json())
-  .then(d=>{
-    const t=d.data.timings;
-    const prayers=[
-      {n:"الفجر",t:t.Fajr},
-      {n:"الظهر",t:t.Dhuhr},
-      {n:"العصر",t:t.Asr},
-      {n:"المغرب",t:t.Maghrib},
-      {n:"العشاء",t:t.Isha}
-    ];
-
-    const now=new Date();
-    let next=null;
-    document.getElementById("prayers").innerHTML="";
-
-    prayers.forEach(p=>{
-      const [h,m]=p.t.split(":");
-      const pt=new Date();
-      pt.setHours(h,m,0);
-      if(!next && pt>now) next={name:p.n,time:pt};
-      document.getElementById("prayers").innerHTML+=
-        `<div class="card">${p.n} : ${p.t}</div>`;
-    });
-
-    if(next){
-      setInterval(()=>{
-        const diff=next.time-new Date();
-        if(diff<=0) return;
-        const m=Math.floor(diff/60000);
-        const s=Math.floor(diff/1000)%60;
-        document.getElementById("countdown").innerText=
-          `⏳ الصلاة القادمة (${next.name}) بعد ${m} د ${s} ث`;
-      },1000);
-    }
-  });
-}
-
-/* ---------- الموقع ---------- */
-function useLocation(){
-  navigator.geolocation.getCurrentPosition(pos=>{
-    fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&localityLanguage=ar`)
-    .then(r=>r.json())
-    .then(d=>{
-      const city=d.city||d.locality;
-      localStorage.setItem("city",city);
-      loadPrayer(city);
-    });
-  },()=>{
-    alert("تم رفض الموقع، اختر المدينة يدويًا");
-  });
-}
-
-/* ---------- بدء التشغيل ---------- */
-const savedCity=localStorage.getItem("city");
-if(savedCity){
-  loadPrayer(savedCity);
-}else{
-  useLocation();
-}
 </script>
 
 </body>
