@@ -23,7 +23,6 @@ body{
   font-family:"Tajawal",sans-serif;
   background:var(--bg-light);
   color:var(--text-light);
-  transition:.3s;
 }
 
 body.dark{
@@ -32,8 +31,8 @@ body.dark{
 }
 
 header{
-  padding:15px;
   text-align:center;
+  padding:15px;
   font-size:22px;
   font-weight:bold;
 }
@@ -45,39 +44,16 @@ header{
   border-radius:14px;
 }
 
-body.dark .card{
-  background:var(--card-dark);
-}
+body.dark .card{background:var(--card-dark);}
 
 button{
   background:var(--gold);
   color:#0a1f44;
   border:none;
-  padding:10px 14px;
+  padding:10px;
   border-radius:10px;
   font-weight:bold;
   margin:5px 0;
-}
-
-input{
-  width:100%;
-  padding:10px;
-  border-radius:10px;
-  border:none;
-  margin:8px 0;
-}
-
-.prayer{
-  display:flex;
-  justify-content:space-between;
-  padding:8px 0;
-}
-
-.next{
-  border:2px solid var(--gold);
-  border-radius:10px;
-  padding:10px;
-  font-weight:bold;
 }
 
 nav{
@@ -87,174 +63,96 @@ nav{
   display:flex;
   background:var(--card-light);
 }
-
 body.dark nav{background:var(--card-dark);}
+nav button{flex:1;border-radius:0;}
 
-nav button{
-  flex:1;
-  border-radius:0;
+#compass{
+  width:200px;
+  height:200px;
+  border:6px solid var(--gold);
+  border-radius:50%;
+  margin:20px auto;
+  position:relative;
+}
+
+#needle{
+  width:4px;
+  height:90px;
+  background:red;
+  position:absolute;
+  top:10px;
+  left:50%;
+  transform-origin:bottom;
+}
+
+#kaaba{
+  position:absolute;
+  bottom:10px;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:24px;
 }
 </style>
 </head>
 
 <body>
 
-<header id="cityName">جارٍ تحديد الموقع…</header>
+<header>🧭 القبلة</header>
 
-<div class="card">
-  <div id="countdown">⏳</div>
-</div>
-
-<div class="card" id="prayers"></div>
-
-<!-- 📿 الأذكار -->
-<div class="card" id="athkar" style="display:none">
-  <h2>📿 الأذكار</h2>
-  <button onclick="showAthkar('morning')">أذكار الصباح</button>
-  <button onclick="showAthkar('evening')">أذكار المساء</button>
-  <button onclick="showAthkar('afterPrayer')">بعد الصلاة</button>
-  <button onclick="showAthkar('dua')">أدعية</button>
-
-  <div id="athkarList" style="margin-top:10px"></div>
-</div>
-
-<!-- ⚙️ الإعدادات -->
-<div class="card" id="settings" style="display:none">
-  <h3>⚙️ الإعدادات</h3>
-  <input id="citySearch" placeholder="اكتب اسم المدينة">
-  <div id="results"></div>
-  <button onclick="toggleDark()">تبديل الوضع</button>
+<div class="card" id="qibla">
+  <div id="compass">
+    <div id="needle"></div>
+    <div id="kaaba">🕋</div>
+  </div>
+  <p id="qiblaText" style="text-align:center">حرّك الجوال لتحديد القبلة</p>
 </div>
 
 <nav>
-  <button onclick="show('prayers')">🕌</button>
-  <button onclick="show('athkar')">📿</button>
-  <button onclick="show('settings')">⚙️</button>
+  <button onclick="toggleDark()">🌙</button>
 </nav>
 
 <script>
-let prayersData={},cities=[];
 let dark=false;
-
-fetch("cities-sa.json").then(r=>r.json()).then(d=>cities=d);
-
 function toggleDark(){
   dark=!dark;
   document.body.classList.toggle("dark");
 }
 
-function show(id){
-  ["prayers","athkar","settings"].forEach(s=>{
-    document.getElementById(s).style.display="none";
-  });
-  document.getElementById(id).style.display="block";
-}
+// إحداثيات الكعبة
+const KAABA_LAT = 21.4225;
+const KAABA_LON = 39.8262;
 
-function load(city){
-  document.getElementById("cityName").innerText=city;
-  fetch(`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=SA&method=4`)
-  .then(r=>r.json()).then(d=>{
-    prayersData=d.data.timings;
-    render();
-  });
-}
+// حساب اتجاه القبلة
+function getQiblaDirection(lat, lon){
+  const dLon = (KAABA_LON - lon) * Math.PI/180;
+  const lat1 = lat * Math.PI/180;
+  const lat2 = KAABA_LAT * Math.PI/180;
 
-function render(){
-  const order=["Fajr","Dhuhr","Asr","Maghrib","Isha"];
-  const names={Fajr:"الفجر",Dhuhr:"الظهر",Asr:"العصر",Maghrib:"المغرب",Isha:"العشاء"};
-  let now=new Date(),next=null;
-
-  for(let p of order){
-    let [h,m]=prayersData[p].split(":");
-    let t=new Date(); t.setHours(h,m,0);
-    if(t>now){next=p;break;}
-  }
-  if(!next) next="Fajr";
-
-  let html="";
-  order.forEach(p=>{
-    html+=`<div class="prayer ${p===next?"next":""}">
-      <span>${names[p]}</span>
-      <span>${prayersData[p]}</span>
-    </div>`;
-  });
-  document.getElementById("prayers").innerHTML=html;
-  countdown(prayersData[next]);
-}
-
-function countdown(time){
-  setInterval(()=>{
-    let [h,m]=time.split(":");
-    let target=new Date(); target.setHours(h,m,0);
-    let diff=target-new Date();
-    if(diff<0) diff+=86400000;
-    let hrs=Math.floor(diff/3600000);
-    let min=Math.floor(diff%3600000/60000);
-    let sec=Math.floor(diff%60000/1000);
-    document.getElementById("countdown").innerText=
-      `الصلاة القادمة بعد ${hrs}:${min}:${sec}`;
-  },1000);
+  const y = Math.sin(dLon);
+  const x = Math.cos(lat1)*Math.tan(lat2) - Math.sin(lat1)*Math.cos(dLon);
+  let brng = Math.atan2(y, x) * 180/Math.PI;
+  return (brng + 360) % 360;
 }
 
 navigator.geolocation.getCurrentPosition(pos=>{
-  fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&localityLanguage=ar`)
-  .then(r=>r.json()).then(d=>{
-    const city=d.city||d.locality;
-    localStorage.setItem("city",city);
-    load(city);
+  const qiblaDir = getQiblaDirection(pos.coords.latitude, pos.coords.longitude);
+
+  window.addEventListener("deviceorientation", e=>{
+    const heading = e.alpha;
+    if(!heading) return;
+
+    const diff = qiblaDir - heading;
+    document.getElementById("needle").style.transform =
+      `rotate(${diff}deg)`;
+
+    if(Math.abs(diff) < 5){
+      document.getElementById("qiblaText").innerText = "✅ أنت متجه نحو القبلة";
+      if(navigator.vibrate) navigator.vibrate(200);
+    }else{
+      document.getElementById("qiblaText").innerText = "حرّك الجوال نحو القبلة";
+    }
   });
-},()=>{
-  load(localStorage.getItem("city")||"الرياض");
 });
-
-document.getElementById("citySearch").oninput=e=>{
-  let q=e.target.value;
-  let res=document.getElementById("results");
-  res.innerHTML="";
-  cities.filter(c=>c.includes(q)).forEach(c=>{
-    let d=document.createElement("div");
-    d.className="card";
-    d.innerText=c;
-    d.onclick=()=>{
-      localStorage.setItem("city",c);
-      load(c);
-    };
-    res.appendChild(d);
-  });
-};
-
-const ATHKAR={
-  morning:[
-    "أصبحنا وأصبح الملك لله والحمد لله",
-    "اللهم بك أصبحنا وبك أمسينا",
-    "رضيت بالله ربًا وبالإسلام دينًا"
-  ],
-  evening:[
-    "أمسينا وأمسى الملك لله",
-    "اللهم بك أمسينا وبك أصبحنا"
-  ],
-  afterPrayer:[
-    "أستغفر الله (3 مرات)",
-    "سبحان الله 33",
-    "الحمد لله 33",
-    "الله أكبر 34"
-  ],
-  dua:[
-    "ربنا آتنا في الدنيا حسنة",
-    "اللهم إني أسألك العفو والعافية"
-  ]
-};
-
-function showAthkar(type){
-  const box=document.getElementById("athkarList");
-  box.innerHTML="";
-  ATHKAR[type].forEach(t=>{
-    let d=document.createElement("div");
-    d.className="card";
-    d.innerText=t;
-    box.appendChild(d);
-  });
-}
 </script>
 
 </body>
