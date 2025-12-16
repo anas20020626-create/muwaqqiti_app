@@ -1,32 +1,27 @@
-<div class="card hidden" id="quran">
-  <h3>📖 القرآن الكريم</h3>
-  <select id="surahSelect" onchange="loadSurah()"></select>
-  <div id="ayahs"></div>
-</div>
-
-<script>
-let quranData;
-
-fetch("quran.json")
-.then(res => res.json())
-.then(data => {
-  quranData = data.surahs;
-  const select = document.getElementById("surahSelect");
-  quranData.forEach((s,i)=>{
-    const o=document.createElement("option");
-    o.value=i;
-    o.textContent="سورة "+s.name;
-    select.appendChild(o);
-  });
-  loadSurah();
-});
-
-function loadSurah(){
-  const i=document.getElementById("surahSelect").value;
-  const box=document.getElementById("ayahs");
-  box.innerHTML="";
-  quranData[i].ayahs.forEach((a,n)=>{
-    box.innerHTML+=`<p>${a} ۝${n+1}</p>`;
-  });
+{
+  "surahs": [
+    {
+      "number": 1,
+      "name": "الفاتحة",
+      "ayahs": [
+        "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+        "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
+        "الرَّحْمَٰنِ الرَّحِيمِ",
+        "مَالِكِ يَوْمِ الدِّينِ",
+        "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+        "اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ",
+        "صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ"
+      ]
+    },
+    {
+      "number": 112,
+      "name": "الإخلاص",
+      "ayahs": [
+        "قُلْ هُوَ اللَّهُ أَحَدٌ",
+        "اللَّهُ الصَّمَدُ",
+        "لَمْ يَلِدْ وَلَمْ يُولَدْ",
+        "وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ"
+      ]
+    }
+  ]
 }
-</script>
