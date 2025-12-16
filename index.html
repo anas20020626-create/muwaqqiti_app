@@ -1,186 +1,162 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>مواقيتي</title>
 
 <style>
 :root{
-  --bg:linear-gradient(135deg,#f7e7b4,#fff6d8);
-  --card:#ffffff;
-  --primary:#0d1b3d;
-  --accent:#0d1b3d;
-  --text:#0d1b3d;
-  --soft:#f4f1e6;
+  --blue:#0b3c5d;
+  --gold:#d4af37;
+  --bg-light:#f5f7fb;
+  --bg-dark:#0a1a2f;
+  --card-light:#ffffff;
+  --card-dark:#112240;
+  --text-light:#000;
+  --text-dark:#fff;
 }
-body.dark{
-  --bg:linear-gradient(135deg,#0b1533,#0d1b3d);
-  --card:#121c3a;
-  --primary:#d4af37;
-  --accent:#d4af37;
-  --text:#f5e6b3;
-  --soft:#1a2550;
+
+@media (prefers-color-scheme: dark){
+  body{
+    background:var(--bg-dark);
+    color:var(--text-dark);
+  }
+  .card{
+    background:var(--card-dark);
+  }
 }
+
+@media (prefers-color-scheme: light){
+  body{
+    background:var(--bg-light);
+    color:var(--text-light);
+  }
+  .card{
+    background:var(--card-light);
+  }
+}
+
 body{
+  font-family: system-ui, sans-serif;
   margin:0;
-  font-family:Tahoma,Arial,sans-serif;
-  background:var(--bg);
-  min-height:100vh;
+  padding:20px;
   display:flex;
   justify-content:center;
-  align-items:center;
 }
+
 .card{
-  width:90%;
+  width:100%;
   max-width:380px;
-  background:var(--card);
   border-radius:20px;
-  padding:25px 20px 30px;
+  padding:25px;
+  box-shadow:0 10px 30px rgba(0,0,0,.15);
   text-align:center;
-  box-shadow:0 15px 35px rgba(0,0,0,.15);
 }
-.title{
-  font-size:30px;
-  font-weight:bold;
-  color:var(--primary);
+
+h1{
+  color:var(--blue);
+  margin-bottom:5px;
 }
-.city{
+
+#city{
   font-size:18px;
-  color:var(--text);
-  margin:10px 0 4px;
+  margin-bottom:15px;
 }
-.countdown{
-  font-size:14px;
-  color:var(--primary);
-  margin-bottom:12px;
-}
+
 .time{
-  background:var(--soft);
-  margin:8px 0;
   padding:12px;
-  border-radius:14px;
+  margin:8px 0;
+  border-radius:12px;
+  background:rgba(0,0,0,.05);
   font-size:18px;
-  color:var(--text);
 }
+
 .next{
-  border:2px solid var(--accent);
+  background:linear-gradient(135deg,var(--gold),#f1d77a);
+  color:#000;
   font-weight:bold;
 }
-.retry{
-  display:none;
-  margin-top:10px;
-  padding:10px;
-  font-size:14px;
-  border-radius:12px;
-  border:1px solid var(--accent);
-  background:transparent;
-  color:var(--accent);
-  cursor:pointer;
-}
-.toggle{
-  margin-top:12px;
-  font-size:14px;
-  color:var(--primary);
-  cursor:pointer;
+
+#countdown{
+  margin-top:15px;
+  font-size:16px;
+  color:var(--gold);
 }
 </style>
 </head>
 
-<body class="dark">
+<body>
 
 <div class="card">
-  <div class="title">🕌 مواقيتي</div>
-  <div id="city" class="city">📍 جاري تحديد موقعك...</div>
-  <div id="countdown" class="countdown">—</div>
+  <h1>🕌 مواقيتي</h1>
+  <div id="city">📍 جاري تحديد الموقع...</div>
 
-  <div id="fajr" class="time">الفجر: --:--</div>
-  <div id="dhuhr" class="time">الظهر: --:--</div>
-  <div id="asr" class="time">العصر: --:--</div>
-  <div id="maghrib" class="time">المغرب: --:--</div>
-  <div id="isha" class="time">العشاء: --:--</div>
+  <div class="time" id="fajr"></div>
+  <div class="time" id="dhuhr"></div>
+  <div class="time" id="asr"></div>
+  <div class="time" id="maghrib"></div>
+  <div class="time" id="isha"></div>
 
-  <button id="retry" class="retry" onclick="loadLocation()">🔄 إعادة تحديد الموقع</button>
-  <div class="toggle" onclick="document.body.classList.toggle('dark')">🔁 تغيير الوضع</div>
+  <div id="countdown"></div>
 </div>
 
 <script>
-let nextPrayerTime=null, nextPrayerName="";
+navigator.geolocation.getCurrentPosition(pos=>{
+  const lat=pos.coords.latitude;
+  const lon=pos.coords.longitude;
 
-function loadLocation(){
-  if(!navigator.geolocation){
-    city.innerText="📍 الموقع غير مدعوم";
-    retry.style.display="block";
-    return;
-  }
-  navigator.geolocation.getCurrentPosition(pos=>{
-    retry.style.display="none";
-    const lat=pos.coords.latitude;
-    const lon=pos.coords.longitude;
-
-    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ar`)
-      .then(r=>r.json())
-      .then(p=>{
-        city.innerText="📍 "+(
-          p.address.city||
-          p.address.town||
-          p.address.village||
-          p.address.hamlet||
-          "موقعك"
-        );
-      });
-
-    fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=4`)
-      .then(r=>r.json())
-      .then(d=>setPrayers(d.data.timings));
-  },()=>{
-    city.innerText="📍 لم يتم السماح بالموقع";
-    retry.style.display="block";
-  });
-}
-
-function setPrayers(t){
-  const prayers=[
-    {id:"fajr",name:"الفجر",time:t.Fajr},
-    {id:"dhuhr",name:"الظهر",time:t.Dhuhr},
-    {id:"asr",name:"العصر",time:t.Asr},
-    {id:"maghrib",name:"المغرب",time:t.Maghrib},
-    {id:"isha",name:"العشاء",time:t.Isha}
-  ];
-
-  prayers.forEach(p=>{
-    const el=document.getElementById(p.id);
-    el.classList.remove("next");
-    el.innerText=`${p.name}: ${p.time}`;
+  fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ar`)
+  .then(r=>r.json())
+  .then(p=>{
+    const c=p.address.city||p.address.town||p.address.village||"موقعك";
+    document.getElementById("city").innerText="📍 "+c;
   });
 
-  const now=new Date();
-  let next=prayers.find(p=>{
-    const [h,m]=p.time.split(":");
-    const pt=new Date(); pt.setHours(h,m,0);
-    return pt>now;
-  })||prayers[0];
+  fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=4`)
+  .then(r=>r.json())
+  .then(d=>{
+    const t=d.data.timings;
 
-  const [h,m]=next.time.split(":");
-  nextPrayerTime=new Date();
-  nextPrayerTime.setHours(h,m,0);
-  nextPrayerName=next.name;
+    const prayers=[
+      {id:"fajr",name:"الفجر",time:t.Fajr},
+      {id:"dhuhr",name:"الظهر",time:t.Dhuhr},
+      {id:"asr",name:"العصر",time:t.Asr},
+      {id:"maghrib",name:"المغرب",time:t.Maghrib},
+      {id:"isha",name:"العشاء",time:t.Isha},
+    ];
 
-  document.getElementById(next.id).classList.add("next");
-}
+    const now=new Date();
+    let next=null;
 
-function updateCountdown(){
-  if(!nextPrayerTime) return;
-  let diff=Math.floor((nextPrayerTime-new Date())/1000);
-  if(diff<0) return;
-  const h=Math.floor(diff/3600);
-  const m=Math.floor((diff%3600)/60);
-  const s=diff%60;
-  countdown.innerText=`⏳ متبقي على ${nextPrayerName}: ${h}س ${m}د ${s}ث`;
-}
+    prayers.forEach(p=>{
+      document.getElementById(p.id).innerText=`${p.name}: ${p.time}`;
+      const [h,m]=p.time.split(":");
+      const pt=new Date();
+      pt.setHours(h,m,0);
+      if(pt>now && !next) next={...p,date:pt};
+    });
 
-setInterval(updateCountdown,1000);
-window.onload=loadLocation;
+    if(!next){
+      const [h,m]=prayers[0].time.split(":");
+      const pt=new Date();
+      pt.setDate(pt.getDate()+1);
+      pt.setHours(h,m,0);
+      next={...prayers[0],date:pt};
+    }
+
+    document.getElementById(next.id).classList.add("next");
+
+    setInterval(()=>{
+      const diff=next.date-new Date();
+      const h=Math.floor(diff/3600000);
+      const m=Math.floor(diff%3600000/60000);
+      const s=Math.floor(diff%60000/1000);
+      document.getElementById("countdown").innerText=
+        `⏳ متبقي على ${next.name}: ${h}س ${m}د ${s}ث`;
+    },1000);
+  });
+});
 </script>
 
 </body>
