@@ -57,41 +57,4 @@
   </script>
 
 </body>
-<button onclick="useMyLocation()" style="
-  padding:10px 15px;
-  margin:10px 0;
-  border:none;
-  border-radius:8px;
-  background:#1e88e5;
-  color:white;
-  font-size:16px;
-">
-📍 استخدام موقعي الحالي
-</button>
-function useMyLocation() {
-  if (!navigator.geolocation) {
-    alert("الموقع الجغرافي غير مدعوم");
-    return;
-  }
-
-  navigator.geolocation.getCurrentPosition(
-    position => {
-      const lat = position.coords.latitude;
-      const lon = position.coords.longitude;
-
-      fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=4`)
-        .then(res => res.json())
-        .then(data => {
-          const t = data.data.timings;
-          document.getElementById("city").innerText = "📍 موقعك الحالي";
-          document.getElementById("fajr").innerText = "الفجر: " + t.Fajr;
-          document.getElementById("dhuhr").innerText = "الظهر: " + t.Dhuhr;
-          document.getElementById("asr").innerText = "العصر: " + t.Asr;
-          document.getElementById("maghrib").innerText = "المغرب: " + t.Maghrib;
-          document.getElementById("isha").innerText = "العشاء: " + t.Isha;
-        });
-    },
-    () => alert("لم يتم السماح بالموقع")
-  );
-}
 </html>
