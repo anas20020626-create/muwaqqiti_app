@@ -5,12 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>مواقيتي</title>
 
-<link rel="icon" href="icon.png">
-<link rel="apple-touch-icon" href="icon.png">
-
-<!-- خط عثمان طه -->
-<link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap" rel="stylesheet">
-
 <style>
 :root{
   --dark-bg:#0b2a4a;
@@ -21,7 +15,7 @@
 
 body{
   margin:0;
-  font-family:system-ui;
+  font-family:system-ui, sans-serif;
   background:var(--dark-bg);
   color:var(--dark-text);
   transition:.3s;
@@ -52,12 +46,7 @@ section.active{
   background:rgba(255,255,255,.08);
   padding:15px;
   border-radius:15px;
-  margin-bottom:15px;
-}
-
-.prayer.next{
-  border:2px solid currentColor;
-  font-weight:bold;
+  margin-bottom:12px;
 }
 
 button{
@@ -68,6 +57,15 @@ button{
   background:currentColor;
   color:inherit;
   font-size:16px;
+  margin-top:10px;
+}
+
+input{
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:none;
+  margin-top:10px;
 }
 
 nav{
@@ -75,26 +73,12 @@ nav{
   bottom:0;
   width:100%;
   display:flex;
-  background:rgba(0,0,0,.2);
+  background:rgba(0,0,0,.25);
 }
 
 nav button{
   flex:1;
   border-radius:0;
-}
-
-.quran{
-  font-family:'Amiri Quran', serif;
-  font-size:20px;
-  line-height:2;
-}
-
-select,input{
-  width:100%;
-  padding:10px;
-  border-radius:10px;
-  border:none;
-  margin-top:10px;
 }
 </style>
 </head>
@@ -103,121 +87,138 @@ select,input{
 
 <header>🕌 مواقيتي</header>
 
+<!-- الصفحة الرئيسية -->
 <section id="home" class="active">
-  <div class="card" id="city">جاري تحديد الموقع...</div>
+  <div class="card" id="city">📍 جاري تحديد الموقع...</div>
   <div id="prayers"></div>
   <div class="card" id="countdown"></div>
 </section>
 
-<section id="qibla">
-  <div class="card">🧭 اتجاه القبلة يعتمد على موقعك الحالي</div>
-</section>
-
-<section id="quran">
-  <select id="surahSelect"></select>
-  <div class="card quran" id="ayahs"></div>
-</section>
-
-<section id="azkar">
-  <div class="card">📿 سبحان الله<br>الحمد لله<br>الله أكبر</div>
-</section>
-
+<!-- الإعدادات -->
 <section id="settings">
-  <button onclick="toggleTheme()">تبديل الوضع</button>
-  <input id="manualCity" placeholder="اكتب اسم مدينتك">
-  <button onclick="saveCity()">حفظ المدينة</button>
+  <div class="card">
+    <h3>⚙️ الإعدادات</h3>
+    <button onclick="toggleTheme()">🌙 / ☀️ تغيير الوضع</button>
+  </div>
+
+  <div class="card">
+    <h3>📍 اختيار المدينة يدويًا</h3>
+    <input id="citySearch" placeholder="اكتب اسم المدينة">
+    <div id="cityResults"></div>
+    <button onclick="useLocation()">📡 استخدام الموقع التلقائي</button>
+  </div>
 </section>
 
 <nav>
   <button onclick="show('home')">🏠</button>
-  <button onclick="show('qibla')">🧭</button>
-  <button onclick="show('quran')">📖</button>
-  <button onclick="show('azkar')">📿</button>
   <button onclick="show('settings')">⚙️</button>
 </nav>
 
 <script>
-const sections=document.querySelectorAll('section');
+/* ---------- تنقّل ---------- */
 function show(id){
-  sections.forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+  document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
 }
 
+/* ---------- الوضع ---------- */
 function toggleTheme(){
-  document.body.classList.toggle('light');
-  localStorage.setItem('theme',document.body.classList.contains('light'));
+  document.body.classList.toggle("light");
+  localStorage.setItem("theme",document.body.classList.contains("light"));
+}
+if(localStorage.getItem("theme")==="true"){
+  document.body.classList.add("light");
 }
 
-if(localStorage.getItem('theme')==="true")document.body.classList.add('light');
+/* ---------- المدن ---------- */
+let cities=[];
+fetch("cities-sa.json")
+.then(r=>r.json())
+.then(d=>cities=d);
 
-function saveCity(){
-  const c=document.getElementById('manualCity').value;
-  if(c){
-    localStorage.setItem('city',c);
-    loadPrayer(c);
-  }
-}
+const search=document.getElementById("citySearch");
+const results=document.getElementById("cityResults");
 
+search.oninput=()=>{
+  const q=search.value.trim();
+  results.innerHTML="";
+  if(q.length<1) return;
+  cities.filter(c=>c.includes(q)).forEach(c=>{
+    const div=document.createElement("div");
+    div.className="card";
+    div.innerText=c;
+    div.onclick=()=>{
+      localStorage.setItem("city",c);
+      loadPrayer(c);
+      alert("تم حفظ المدينة");
+    };
+    results.appendChild(div);
+  });
+};
+
+/* ---------- المواقيت ---------- */
 function loadPrayer(city){
-  document.getElementById('city').innerText=city;
-  fetch(`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=SA`)
-  .then(r=>r.json()).then(d=>{
+  document.getElementById("city").innerText="📍 "+city;
+  fetch(`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=SA&method=4`)
+  .then(r=>r.json())
+  .then(d=>{
     const t=d.data.timings;
     const prayers=[
-      {n:'الفجر',t:t.Fajr},
-      {n:'الظهر',t:t.Dhuhr},
-      {n:'العصر',t:t.Asr},
-      {n:'المغرب',t:t.Maghrib},
-      {n:'العشاء',t:t.Isha},
+      {n:"الفجر",t:t.Fajr},
+      {n:"الظهر",t:t.Dhuhr},
+      {n:"العصر",t:t.Asr},
+      {n:"المغرب",t:t.Maghrib},
+      {n:"العشاء",t:t.Isha}
     ];
+
     const now=new Date();
-    let next;
-    document.getElementById('prayers').innerHTML='';
+    let next=null;
+    document.getElementById("prayers").innerHTML="";
+
     prayers.forEach(p=>{
-      const [h,m]=p.t.split(':');
+      const [h,m]=p.t.split(":");
       const pt=new Date();
       pt.setHours(h,m,0);
-      if(!next && pt>now)next=pt;
-      document.getElementById('prayers').innerHTML+=
-      `<div class="card prayer ${pt>now && !next?'next':''}">${p.n} : ${p.t}</div>`;
+      if(!next && pt>now) next={name:p.n,time:pt};
+      document.getElementById("prayers").innerHTML+=
+        `<div class="card">${p.n} : ${p.t}</div>`;
     });
+
     if(next){
       setInterval(()=>{
-        const diff=next-new Date();
+        const diff=next.time-new Date();
+        if(diff<=0) return;
         const m=Math.floor(diff/60000);
         const s=Math.floor(diff/1000)%60;
-        document.getElementById('countdown').innerText=
-        `⏳ الصلاة القادمة بعد ${m} دقيقة و ${s} ثانية`;
+        document.getElementById("countdown").innerText=
+          `⏳ الصلاة القادمة (${next.name}) بعد ${m} د ${s} ث`;
       },1000);
     }
   });
 }
 
-navigator.geolocation.getCurrentPosition(pos=>{
-  fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&localityLanguage=ar`)
-  .then(r=>r.json()).then(d=>{
-    const city=d.city||d.locality;
-    localStorage.setItem('city',city);
-    loadPrayer(city);
+/* ---------- الموقع ---------- */
+function useLocation(){
+  navigator.geolocation.getCurrentPosition(pos=>{
+    fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&localityLanguage=ar`)
+    .then(r=>r.json())
+    .then(d=>{
+      const city=d.city||d.locality;
+      localStorage.setItem("city",city);
+      loadPrayer(city);
+    });
+  },()=>{
+    alert("تم رفض الموقع، اختر المدينة يدويًا");
   });
-},()=>{
-  const c=localStorage.getItem('city')||'الرياض';
-  loadPrayer(c);
-});
+}
 
-fetch('https://api.alquran.cloud/v1/surah')
-.then(r=>r.json()).then(d=>{
-  d.data.forEach(s=>{
-    surahSelect.innerHTML+=`<option value="${s.number}">${s.name}</option>`;
-  });
-});
-
-surahSelect.onchange=()=>{
-  fetch(`https://api.alquran.cloud/v1/surah/${surahSelect.value}/quran-uthmani`)
-  .then(r=>r.json()).then(d=>{
-    ayahs.innerHTML=d.data.ayahs.map(a=>a.text).join(' ');
-  });
-};
+/* ---------- بدء التشغيل ---------- */
+const savedCity=localStorage.getItem("city");
+if(savedCity){
+  loadPrayer(savedCity);
+}else{
+  useLocation();
+}
 </script>
 
 </body>
