@@ -32,7 +32,6 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  transition: 0.3s;
 }
 
 .card {
@@ -49,13 +48,18 @@ body {
   font-size: 30px;
   font-weight: bold;
   color: var(--primary);
-  margin-bottom: 6px;
 }
 
 .city {
   font-size: 18px;
   color: var(--text);
-  margin-bottom: 18px;
+  margin: 10px 0 6px;
+}
+
+.notice {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 10px;
 }
 
 .time {
@@ -73,8 +77,20 @@ body {
   font-weight: bold;
 }
 
+.retry {
+  display: none;
+  margin-top: 12px;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+}
+
 .toggle {
-  margin-top: 14px;
+  margin-top: 12px;
   font-size: 14px;
   color: var(--primary);
   cursor: pointer;
@@ -87,6 +103,7 @@ body {
 <div class="card">
   <div class="title">🕌 مواقيتي</div>
   <div id="city" class="city">📍 جاري تحديد موقعك...</div>
+  <div id="notice" class="notice">يرجى السماح بالوصول إلى الموقع</div>
 
   <div id="fajr" class="time">الفجر: --:--</div>
   <div id="dhuhr" class="time">الظهر: --:--</div>
@@ -94,6 +111,7 @@ body {
   <div id="maghrib" class="time">المغرب: --:--</div>
   <div id="isha" class="time">العشاء: --:--</div>
 
+  <button id="retryBtn" class="retry" onclick="loadLocation()">🔄 إعادة تحديد الموقع</button>
   <div class="toggle" onclick="toggleMode()">🔁 تغيير الوضع</div>
 </div>
 
@@ -103,70 +121,69 @@ function toggleMode() {
 }
 
 function loadLocation() {
+  const retry = document.getElementById("retryBtn");
+  const notice = document.getElementById("notice");
+
   if (!navigator.geolocation) {
-    document.getElementById("city").innerText = "📍 الموقع غير مدعوم";
+    city.innerText = "📍 الموقع غير مدعوم";
+    retry.style.display = "block";
     return;
   }
 
   navigator.geolocation.getCurrentPosition(pos => {
+    retry.style.display = "none";
+    notice.style.display = "none";
+
     const lat = pos.coords.latitude;
     const lon = pos.coords.longitude;
 
-    // اسم المدينة
     fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ar`)
-      .then(res => res.json())
-      .then(place => {
-        const city =
-          place.address.city ||
-          place.address.town ||
-          place.address.village ||
-          place.address.hamlet ||
-          "موقعك";
-        document.getElementById("city").innerText = "📍 " + city;
+      .then(r => r.json())
+      .then(p => {
+        city.innerText = "📍 " + (
+          p.address.city ||
+          p.address.town ||
+          p.address.village ||
+          p.address.hamlet ||
+          "موقعك"
+        );
       });
 
-    // أوقات الصلاة
     fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=4`)
-      .then(res => res.json())
-      .then(data => {
-        const t = data.data.timings;
-
+      .then(r => r.json())
+      .then(d => {
+        const t = d.data.timings;
         const prayers = [
-          { id: "fajr", name: "الفجر", time: t.Fajr },
-          { id: "dhuhr", name: "الظهر", time: t.Dhuhr },
-          { id: "asr", name: "العصر", time: t.Asr },
-          { id: "maghrib", name: "المغرب", time: t.Maghrib },
-          { id: "isha", name: "العشاء", time: t.Isha }
+          {id:"fajr",name:"الفجر",time:t.Fajr},
+          {id:"dhuhr",name:"الظهر",time:t.Dhuhr},
+          {id:"asr",name:"العصر",time:t.Asr},
+          {id:"maghrib",name:"المغرب",time:t.Maghrib},
+          {id:"isha",name:"العشاء",time:t.Isha}
         ];
 
-        prayers.forEach(p => {
-          const el = document.getElementById(p.id);
+        prayers.forEach(p=>{
+          const el=document.getElementById(p.id);
           el.classList.remove("next");
-          el.innerText = `${p.name}: ${p.time}`;
+          el.innerText=`${p.name}: ${p.time}`;
         });
 
-        const now = new Date();
-        let nextPrayer = null;
-
-        for (let p of prayers) {
-          const [h, m] = p.time.split(":");
-          const pt = new Date();
-          pt.setHours(h, m, 0);
-          if (pt > now) {
-            nextPrayer = p;
-            break;
-          }
+        const now=new Date();
+        let next=null;
+        for(let p of prayers){
+          const [h,m]=p.time.split(":");
+          const pt=new Date(); pt.setHours(h,m,0);
+          if(pt>now){ next=p; break;}
         }
-
-        if (!nextPrayer) nextPrayer = prayers[0];
-        document.getElementById(nextPrayer.id).classList.add("next");
+        if(!next) next=prayers[0];
+        document.getElementById(next.id).classList.add("next");
       });
-  }, () => {
-    document.getElementById("city").innerText = "📍 لم يتم السماح بالموقع";
+
+  }, ()=>{
+    city.innerText = "📍 لم يتم السماح بالموقع";
+    retry.style.display = "block";
   });
 }
 
-// تشغيل تلقائي عند فتح الموقع
 window.onload = loadLocation;
 </script>
 
