@@ -7,58 +7,46 @@
 
   <style>
     body {
-      font-family: 'Tajawal', Arial, sans-serif;
-      background: linear-gradient(135deg, #e8f0ff, #f9fbff);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+      font-family: Arial, sans-serif;
+      background: #f3f6fa;
       margin: 0;
+      padding: 20px;
     }
 
     .card {
+      max-width: 400px;
+      margin: auto;
       background: white;
-      width: 320px;
-      padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       text-align: center;
     }
 
     h1 {
-      margin: 0;
       color: #1e88e5;
-      font-size: 22px;
+      margin-bottom: 10px;
     }
 
     #city {
-      margin: 10px 0 20px;
-      font-size: 16px;
-      color: #444;
+      font-size: 18px;
+      margin-bottom: 15px;
     }
 
     .time {
-      background: #f4f6f8;
+      font-size: 18px;
       margin: 8px 0;
-      padding: 10px;
-      border-radius: 10px;
-      font-size: 17px;
     }
 
     button {
-      margin-top: 15px;
-      padding: 12px;
-      width: 100%;
+      margin-top: 20px;
+      padding: 12px 18px;
       border: none;
-      border-radius: 12px;
+      border-radius: 10px;
       background: #1e88e5;
       color: white;
       font-size: 16px;
       cursor: pointer;
-    }
-
-    button:hover {
-      background: #1565c0;
     }
   </style>
 </head>
@@ -66,8 +54,8 @@
 <body>
 
   <div class="card">
-    <h1>🕌 مواقيت الصلاة</h1>
-    <div id="city">📍 جاري تحديد الموقع...</div>
+    <h1>مواقيتي 🕌</h1>
+    <div id="city">📍 موقعك</div>
 
     <div class="time" id="fajr"></div>
     <div class="time" id="dhuhr"></div>
@@ -79,6 +67,20 @@
   </div>
 
   <script>
+    // تحميل افتراضي (الرياض)
+    fetch("https://api.aladhan.com/v1/timingsByCity?city=Riyadh&country=Saudi Arabia&method=4")
+      .then(res => res.json())
+      .then(data => showTimings(data.data.timings, "الرياض"));
+
+    function showTimings(t, cityName) {
+      document.getElementById("city").innerText = "📍 " + cityName;
+      document.getElementById("fajr").innerText = "الفجر: " + t.Fajr;
+      document.getElementById("dhuhr").innerText = "الظهر: " + t.Dhuhr;
+      document.getElementById("asr").innerText = "العصر: " + t.Asr;
+      document.getElementById("maghrib").innerText = "المغرب: " + t.Maghrib;
+      document.getElementById("isha").innerText = "العشاء: " + t.Isha;
+    }
+
     function useMyLocation() {
       if (!navigator.geolocation) {
         alert("الموقع الجغرافي غير مدعوم");
@@ -89,7 +91,7 @@
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
 
-        /* جلب اسم المدينة */
+        // جلب اسم المدينة / القرية
         fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ar`)
           .then(res => res.json())
           .then(place => {
@@ -98,25 +100,15 @@
               place.address.town ||
               place.address.village ||
               place.address.hamlet ||
-              "موقعك الحالي";
+              "موقعك";
 
-            document.getElementById("city").innerText = "📍 " + city;
+            // جلب مواقيت الصلاة حسب الإحداثيات
+            fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=4`)
+              .then(res => res.json())
+              .then(data => {
+                showTimings(data.data.timings, city);
+              });
           });
-
-        /* جلب أوقات الصلاة */
-        fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=4`)
-          .then(res => res.json())
-          .then(data => {
-            const t = data.data.timings;
-            document.getElementById("fajr").innerText    = "الفجر : " + t.Fajr;
-            document.getElementById("dhuhr").innerText   = "الظهر : " + t.Dhuhr;
-            document.getElementById("asr").innerText     = "العصر : " + t.Asr;
-            document.getElementById("maghrib").innerText = "المغرب : " + t.Maghrib;
-            document.getElementById("isha").innerText    = "العشاء : " + t.Isha;
-          });
-
-      }, () => {
-        alert("لم يتم السماح بالموقع");
       });
     }
   </script>
@@ -131,58 +123,46 @@
 
   <style>
     body {
-      font-family: 'Tajawal', Arial, sans-serif;
-      background: linear-gradient(135deg, #e8f0ff, #f9fbff);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+      font-family: Arial, sans-serif;
+      background: #f3f6fa;
       margin: 0;
+      padding: 20px;
     }
 
     .card {
+      max-width: 400px;
+      margin: auto;
       background: white;
-      width: 320px;
-      padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       text-align: center;
     }
 
     h1 {
-      margin: 0;
       color: #1e88e5;
-      font-size: 22px;
+      margin-bottom: 10px;
     }
 
     #city {
-      margin: 10px 0 20px;
-      font-size: 16px;
-      color: #444;
+      font-size: 18px;
+      margin-bottom: 15px;
     }
 
     .time {
-      background: #f4f6f8;
+      font-size: 18px;
       margin: 8px 0;
-      padding: 10px;
-      border-radius: 10px;
-      font-size: 17px;
     }
 
     button {
-      margin-top: 15px;
-      padding: 12px;
-      width: 100%;
+      margin-top: 20px;
+      padding: 12px 18px;
       border: none;
-      border-radius: 12px;
+      border-radius: 10px;
       background: #1e88e5;
       color: white;
       font-size: 16px;
       cursor: pointer;
-    }
-
-    button:hover {
-      background: #1565c0;
     }
   </style>
 </head>
@@ -190,8 +170,8 @@
 <body>
 
   <div class="card">
-    <h1>🕌 مواقيت الصلاة</h1>
-    <div id="city">📍 جاري تحديد الموقع...</div>
+    <h1>مواقيتي 🕌</h1>
+    <div id="city">📍 موقعك</div>
 
     <div class="time" id="fajr"></div>
     <div class="time" id="dhuhr"></div>
@@ -203,6 +183,20 @@
   </div>
 
   <script>
+    // تحميل افتراضي (الرياض)
+    fetch("https://api.aladhan.com/v1/timingsByCity?city=Riyadh&country=Saudi Arabia&method=4")
+      .then(res => res.json())
+      .then(data => showTimings(data.data.timings, "الرياض"));
+
+    function showTimings(t, cityName) {
+      document.getElementById("city").innerText = "📍 " + cityName;
+      document.getElementById("fajr").innerText = "الفجر: " + t.Fajr;
+      document.getElementById("dhuhr").innerText = "الظهر: " + t.Dhuhr;
+      document.getElementById("asr").innerText = "العصر: " + t.Asr;
+      document.getElementById("maghrib").innerText = "المغرب: " + t.Maghrib;
+      document.getElementById("isha").innerText = "العشاء: " + t.Isha;
+    }
+
     function useMyLocation() {
       if (!navigator.geolocation) {
         alert("الموقع الجغرافي غير مدعوم");
@@ -213,7 +207,7 @@
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
 
-        /* جلب اسم المدينة */
+        // جلب اسم المدينة / القرية
         fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ar`)
           .then(res => res.json())
           .then(place => {
@@ -222,25 +216,15 @@
               place.address.town ||
               place.address.village ||
               place.address.hamlet ||
-              "موقعك الحالي";
+              "موقعك";
 
-            document.getElementById("city").innerText = "📍 " + city;
+            // جلب مواقيت الصلاة حسب الإحداثيات
+            fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=4`)
+              .then(res => res.json())
+              .then(data => {
+                showTimings(data.data.timings, city);
+              });
           });
-
-        /* جلب أوقات الصلاة */
-        fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=4`)
-          .then(res => res.json())
-          .then(data => {
-            const t = data.data.timings;
-            document.getElementById("fajr").innerText    = "الفجر : " + t.Fajr;
-            document.getElementById("dhuhr").innerText   = "الظهر : " + t.Dhuhr;
-            document.getElementById("asr").innerText     = "العصر : " + t.Asr;
-            document.getElementById("maghrib").innerText = "المغرب : " + t.Maghrib;
-            document.getElementById("isha").innerText    = "العشاء : " + t.Isha;
-          });
-
-      }, () => {
-        alert("لم يتم السماح بالموقع");
       });
     }
   </script>
