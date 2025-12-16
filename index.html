@@ -1,78 +1,121 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>مواقيتي</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مواقيتي</title>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f2f6ff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
+<style>
+:root {
+  --bg: linear-gradient(135deg, #f7e7b4, #fff6d8);
+  --card: #ffffff;
+  --primary: #0d1b3d;
+  --accent: #0d1b3d;
+  --text: #0d1b3d;
+  --soft: #f4f1e6;
+}
 
-    .card {
-      background: white;
-      width: 320px;
-      padding: 25px;
-      border-radius: 16px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-      text-align: center;
-    }
+body.dark {
+  --bg: linear-gradient(135deg, #0b1533, #0d1b3d);
+  --card: #121c3a;
+  --primary: #d4af37;
+  --accent: #d4af37;
+  --text: #f5e6b3;
+  --soft: #1a2550;
+}
 
-    h1 {
-      color: #1e88e5;
-      margin-bottom: 10px;
-    }
+body {
+  margin: 0;
+  font-family: Tahoma, Arial, sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: 0.3s;
+}
 
-    #city {
-      margin: 10px 0 20px;
-      font-size: 18px;
-    }
+.card {
+  width: 90%;
+  max-width: 380px;
+  background: var(--card);
+  border-radius: 20px;
+  padding: 25px 20px 30px;
+  text-align: center;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
 
-    .time {
-      background: #f4f6f8;
-      margin: 8px 0;
-      padding: 10px;
-      border-radius: 10px;
-      font-size: 18px;
-    }
+.title {
+  font-size: 30px;
+  font-weight: bold;
+  color: var(--primary);
+  margin-bottom: 6px;
+}
 
-    button {
-      margin-top: 15px;
-      padding: 12px;
-      width: 100%;
-      border: none;
-      border-radius: 10px;
-      background: #1e88e5;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-    }
-  </style>
+.city {
+  font-size: 18px;
+  color: var(--text);
+  margin-bottom: 18px;
+}
+
+.time {
+  background: var(--soft);
+  margin: 8px 0;
+  padding: 12px;
+  border-radius: 14px;
+  font-size: 18px;
+  color: var(--text);
+}
+
+button {
+  width: 100%;
+  margin-top: 16px;
+  padding: 14px;
+  font-size: 17px;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--accent), #b8962e);
+  color: #fff;
+  box-shadow: 0 10px 22px rgba(0,0,0,0.25);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+button:active {
+  transform: scale(0.97);
+  box-shadow: 0 5px 12px rgba(0,0,0,0.25);
+}
+
+.toggle {
+  margin-top: 12px;
+  font-size: 14px;
+  color: var(--primary);
+  cursor: pointer;
+}
+</style>
 </head>
 
-<body>
+<body class="dark">
 
-  <div class="card">
-    <h1>🕌 مواقيتي</h1>
-    <div id="city">📍 جاري تحديد الموقع...</div>
+<div class="card">
+  <div class="title">🕌 مواقيتي</div>
+  <div id="city" class="city">📍 موقعك</div>
 
-    <div class="time" id="fajr"></div>
-    <div class="time" id="dhuhr"></div>
-    <div class="time" id="asr"></div>
-    <div class="time" id="maghrib"></div>
-    <div class="time" id="isha"></div>
+  <div id="fajr" class="time">الفجر: --:--</div>
+  <div id="dhuhr" class="time">الظهر: --:--</div>
+  <div id="asr" class="time">العصر: --:--</div>
+  <div id="maghrib" class="time">المغرب: --:--</div>
+  <div id="isha" class="time">العشاء: --:--</div>
 
-    <button onclick="useMyLocation()">📍 استخدام موقعي الحالي</button>
-  </div>
+  <button onclick="useMyLocation()">📍 استخدام موقعي الحالي</button>
+  <div class="toggle" onclick="toggleMode()">🔁 تغيير الوضع</div>
+</div>
 
 <script>
+function toggleMode() {
+  document.body.classList.toggle("dark");
+}
+
 function useMyLocation() {
   if (!navigator.geolocation) {
     alert("الموقع الجغرافي غير مدعوم");
@@ -83,7 +126,6 @@ function useMyLocation() {
     const lat = pos.coords.latitude;
     const lon = pos.coords.longitude;
 
-    // جلب اسم المدينة
     fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ar`)
       .then(res => res.json())
       .then(place => {
@@ -96,18 +138,16 @@ function useMyLocation() {
         document.getElementById("city").innerText = "📍 " + city;
       });
 
-    // جلب مواقيت الصلاة
     fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=4`)
       .then(res => res.json())
       .then(data => {
         const t = data.data.timings;
-        document.getElementById("fajr").innerText = "الفجر: " + t.Fajr;
-        document.getElementById("dhuhr").innerText = "الظهر: " + t.Dhuhr;
-        document.getElementById("asr").innerText = "العصر: " + t.Asr;
-        document.getElementById("maghrib").innerText = "المغرب: " + t.Maghrib;
-        document.getElementById("isha").innerText = "العشاء: " + t.Isha;
+        fajr.innerText = "الفجر: " + t.Fajr;
+        dhuhr.innerText = "الظهر: " + t.Dhuhr;
+        asr.innerText = "العصر: " + t.Asr;
+        maghrib.innerText = "المغرب: " + t.Maghrib;
+        isha.innerText = "العشاء: " + t.Isha;
       });
-
   });
 }
 </script>
