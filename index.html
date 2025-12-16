@@ -73,26 +73,8 @@ body {
   font-weight: bold;
 }
 
-button {
-  width: 100%;
-  margin-top: 16px;
-  padding: 14px;
-  font-size: 17px;
-  border-radius: 16px;
-  border: none;
-  cursor: pointer;
-  background: linear-gradient(135deg, var(--accent), #b8962e);
-  color: #fff;
-  box-shadow: 0 10px 22px rgba(0,0,0,0.25);
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-
-button:active {
-  transform: scale(0.97);
-}
-
 .toggle {
-  margin-top: 12px;
+  margin-top: 14px;
   font-size: 14px;
   color: var(--primary);
   cursor: pointer;
@@ -104,7 +86,7 @@ button:active {
 
 <div class="card">
   <div class="title">🕌 مواقيتي</div>
-  <div id="city" class="city">📍 موقعك</div>
+  <div id="city" class="city">📍 جاري تحديد موقعك...</div>
 
   <div id="fajr" class="time">الفجر: --:--</div>
   <div id="dhuhr" class="time">الظهر: --:--</div>
@@ -112,7 +94,6 @@ button:active {
   <div id="maghrib" class="time">المغرب: --:--</div>
   <div id="isha" class="time">العشاء: --:--</div>
 
-  <button onclick="useMyLocation()">📍 استخدام موقعي الحالي</button>
   <div class="toggle" onclick="toggleMode()">🔁 تغيير الوضع</div>
 </div>
 
@@ -121,9 +102,9 @@ function toggleMode() {
   document.body.classList.toggle("dark");
 }
 
-function useMyLocation() {
+function loadLocation() {
   if (!navigator.geolocation) {
-    alert("الموقع الجغرافي غير مدعوم");
+    document.getElementById("city").innerText = "📍 الموقع غير مدعوم";
     return;
   }
 
@@ -131,6 +112,7 @@ function useMyLocation() {
     const lat = pos.coords.latitude;
     const lon = pos.coords.longitude;
 
+    // اسم المدينة
     fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ar`)
       .then(res => res.json())
       .then(place => {
@@ -143,6 +125,7 @@ function useMyLocation() {
         document.getElementById("city").innerText = "📍 " + city;
       });
 
+    // أوقات الصلاة
     fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=4`)
       .then(res => res.json())
       .then(data => {
@@ -178,8 +161,13 @@ function useMyLocation() {
         if (!nextPrayer) nextPrayer = prayers[0];
         document.getElementById(nextPrayer.id).classList.add("next");
       });
+  }, () => {
+    document.getElementById("city").innerText = "📍 لم يتم السماح بالموقع";
   });
 }
+
+// تشغيل تلقائي عند فتح الموقع
+window.onload = loadLocation;
 </script>
 
 </body>
