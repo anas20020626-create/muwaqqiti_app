@@ -72,6 +72,18 @@
   navigator.geolocation.getCurrentPosition(position => {
     const lat = position.coords.latitude;
     const lon = position.coords.longitude;
+    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ar`)
+  .then(res => res.json())
+  .then(place => {
+    const city =
+      place.address.city ||
+      place.address.town ||
+      place.address.village ||
+      place.address.hamlet ||
+      "موقعك";
+
+    document.getElementById("city").innerText = "📍 " + city;
+  });
 
     fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=4`)
       .then(res => res.json())
