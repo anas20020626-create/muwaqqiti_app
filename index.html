@@ -41,7 +41,16 @@
     <div class="time" id="maghrib"></div>
     <div class="time" id="isha"></div>
   </div>
-
+<button onclick="useMyLocation()" style="
+  margin-top: 15px;
+  padding:10px 15px;
+  border:none;
+  border-radius:8px;
+  background:#1e88e5;
+  color:white;
+  font-size:16px;">
+📍 استخدام موقعي الحالي
+</button>
   <script>
     fetch("https://api.aladhan.com/v1/timingsByCity?city=Riyadh&country=Saudi Arabia&method=4")
       .then(response => response.json())
