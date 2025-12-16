@@ -1,162 +1,223 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>مواقيتي</title>
+
+<link rel="icon" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+
+<!-- خط عثمان طه -->
+<link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap" rel="stylesheet">
 
 <style>
 :root{
-  --blue:#0b3c5d;
-  --gold:#d4af37;
-  --bg-light:#f5f7fb;
-  --bg-dark:#0a1a2f;
-  --card-light:#ffffff;
-  --card-dark:#112240;
-  --text-light:#000;
-  --text-dark:#fff;
-}
-
-@media (prefers-color-scheme: dark){
-  body{
-    background:var(--bg-dark);
-    color:var(--text-dark);
-  }
-  .card{
-    background:var(--card-dark);
-  }
-}
-
-@media (prefers-color-scheme: light){
-  body{
-    background:var(--bg-light);
-    color:var(--text-light);
-  }
-  .card{
-    background:var(--card-light);
-  }
+  --dark-bg:#0b2a4a;
+  --dark-text:#d4af37;
+  --light-bg:#d4af37;
+  --light-text:#0b2a4a;
 }
 
 body{
-  font-family: system-ui, sans-serif;
   margin:0;
-  padding:20px;
-  display:flex;
-  justify-content:center;
+  font-family:system-ui;
+  background:var(--dark-bg);
+  color:var(--dark-text);
+  transition:.3s;
 }
 
-.card{
-  width:100%;
-  max-width:380px;
-  border-radius:20px;
-  padding:25px;
-  box-shadow:0 10px 30px rgba(0,0,0,.15);
+.light{
+  background:var(--light-bg);
+  color:var(--light-text);
+}
+
+header{
   text-align:center;
-}
-
-h1{
-  color:var(--blue);
-  margin-bottom:5px;
-}
-
-#city{
-  font-size:18px;
-  margin-bottom:15px;
-}
-
-.time{
-  padding:12px;
-  margin:8px 0;
-  border-radius:12px;
-  background:rgba(0,0,0,.05);
-  font-size:18px;
-}
-
-.next{
-  background:linear-gradient(135deg,var(--gold),#f1d77a);
-  color:#000;
+  padding:15px;
+  font-size:22px;
   font-weight:bold;
 }
 
-#countdown{
-  margin-top:15px;
+section{
+  display:none;
+  padding:15px;
+}
+
+section.active{
+  display:block;
+}
+
+.card{
+  background:rgba(255,255,255,.08);
+  padding:15px;
+  border-radius:15px;
+  margin-bottom:15px;
+}
+
+.prayer.next{
+  border:2px solid currentColor;
+  font-weight:bold;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  background:currentColor;
+  color:inherit;
   font-size:16px;
-  color:var(--gold);
+}
+
+nav{
+  position:fixed;
+  bottom:0;
+  width:100%;
+  display:flex;
+  background:rgba(0,0,0,.2);
+}
+
+nav button{
+  flex:1;
+  border-radius:0;
+}
+
+.quran{
+  font-family:'Amiri Quran', serif;
+  font-size:20px;
+  line-height:2;
+}
+
+select,input{
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:none;
+  margin-top:10px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="card">
-  <h1>🕌 مواقيتي</h1>
-  <div id="city">📍 جاري تحديد الموقع...</div>
+<header>🕌 مواقيتي</header>
 
-  <div class="time" id="fajr"></div>
-  <div class="time" id="dhuhr"></div>
-  <div class="time" id="asr"></div>
-  <div class="time" id="maghrib"></div>
-  <div class="time" id="isha"></div>
+<section id="home" class="active">
+  <div class="card" id="city">جاري تحديد الموقع...</div>
+  <div id="prayers"></div>
+  <div class="card" id="countdown"></div>
+</section>
 
-  <div id="countdown"></div>
-</div>
+<section id="qibla">
+  <div class="card">🧭 اتجاه القبلة يعتمد على موقعك الحالي</div>
+</section>
+
+<section id="quran">
+  <select id="surahSelect"></select>
+  <div class="card quran" id="ayahs"></div>
+</section>
+
+<section id="azkar">
+  <div class="card">📿 سبحان الله<br>الحمد لله<br>الله أكبر</div>
+</section>
+
+<section id="settings">
+  <button onclick="toggleTheme()">تبديل الوضع</button>
+  <input id="manualCity" placeholder="اكتب اسم مدينتك">
+  <button onclick="saveCity()">حفظ المدينة</button>
+</section>
+
+<nav>
+  <button onclick="show('home')">🏠</button>
+  <button onclick="show('qibla')">🧭</button>
+  <button onclick="show('quran')">📖</button>
+  <button onclick="show('azkar')">📿</button>
+  <button onclick="show('settings')">⚙️</button>
+</nav>
 
 <script>
-navigator.geolocation.getCurrentPosition(pos=>{
-  const lat=pos.coords.latitude;
-  const lon=pos.coords.longitude;
+const sections=document.querySelectorAll('section');
+function show(id){
+  sections.forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
 
-  fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ar`)
-  .then(r=>r.json())
-  .then(p=>{
-    const c=p.address.city||p.address.town||p.address.village||"موقعك";
-    document.getElementById("city").innerText="📍 "+c;
-  });
+function toggleTheme(){
+  document.body.classList.toggle('light');
+  localStorage.setItem('theme',document.body.classList.contains('light'));
+}
 
-  fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=4`)
-  .then(r=>r.json())
-  .then(d=>{
+if(localStorage.getItem('theme')==="true")document.body.classList.add('light');
+
+function saveCity(){
+  const c=document.getElementById('manualCity').value;
+  if(c){
+    localStorage.setItem('city',c);
+    loadPrayer(c);
+  }
+}
+
+function loadPrayer(city){
+  document.getElementById('city').innerText=city;
+  fetch(`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=SA`)
+  .then(r=>r.json()).then(d=>{
     const t=d.data.timings;
-
     const prayers=[
-      {id:"fajr",name:"الفجر",time:t.Fajr},
-      {id:"dhuhr",name:"الظهر",time:t.Dhuhr},
-      {id:"asr",name:"العصر",time:t.Asr},
-      {id:"maghrib",name:"المغرب",time:t.Maghrib},
-      {id:"isha",name:"العشاء",time:t.Isha},
+      {n:'الفجر',t:t.Fajr},
+      {n:'الظهر',t:t.Dhuhr},
+      {n:'العصر',t:t.Asr},
+      {n:'المغرب',t:t.Maghrib},
+      {n:'العشاء',t:t.Isha},
     ];
-
     const now=new Date();
-    let next=null;
-
+    let next;
+    document.getElementById('prayers').innerHTML='';
     prayers.forEach(p=>{
-      document.getElementById(p.id).innerText=`${p.name}: ${p.time}`;
-      const [h,m]=p.time.split(":");
+      const [h,m]=p.t.split(':');
       const pt=new Date();
       pt.setHours(h,m,0);
-      if(pt>now && !next) next={...p,date:pt};
+      if(!next && pt>now)next=pt;
+      document.getElementById('prayers').innerHTML+=
+      `<div class="card prayer ${pt>now && !next?'next':''}">${p.n} : ${p.t}</div>`;
     });
-
-    if(!next){
-      const [h,m]=prayers[0].time.split(":");
-      const pt=new Date();
-      pt.setDate(pt.getDate()+1);
-      pt.setHours(h,m,0);
-      next={...prayers[0],date:pt};
+    if(next){
+      setInterval(()=>{
+        const diff=next-new Date();
+        const m=Math.floor(diff/60000);
+        const s=Math.floor(diff/1000)%60;
+        document.getElementById('countdown').innerText=
+        `⏳ الصلاة القادمة بعد ${m} دقيقة و ${s} ثانية`;
+      },1000);
     }
+  });
+}
 
-    document.getElementById(next.id).classList.add("next");
+navigator.geolocation.getCurrentPosition(pos=>{
+  fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&localityLanguage=ar`)
+  .then(r=>r.json()).then(d=>{
+    const city=d.city||d.locality;
+    localStorage.setItem('city',city);
+    loadPrayer(city);
+  });
+},()=>{
+  const c=localStorage.getItem('city')||'الرياض';
+  loadPrayer(c);
+});
 
-    setInterval(()=>{
-      const diff=next.date-new Date();
-      const h=Math.floor(diff/3600000);
-      const m=Math.floor(diff%3600000/60000);
-      const s=Math.floor(diff%60000/1000);
-      document.getElementById("countdown").innerText=
-        `⏳ متبقي على ${next.name}: ${h}س ${m}د ${s}ث`;
-    },1000);
+fetch('https://api.alquran.cloud/v1/surah')
+.then(r=>r.json()).then(d=>{
+  d.data.forEach(s=>{
+    surahSelect.innerHTML+=`<option value="${s.number}">${s.name}</option>`;
   });
 });
+
+surahSelect.onchange=()=>{
+  fetch(`https://api.alquran.cloud/v1/surah/${surahSelect.value}/quran-uthmani`)
+  .then(r=>r.json()).then(d=>{
+    ayahs.innerHTML=d.data.ayahs.map(a=>a.text).join(' ');
+  });
+};
 </script>
 
 </body>
