@@ -2,51 +2,65 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>مواقيتي</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مواقيتي</title>
 
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f3f6fa;
       margin: 0;
-      padding: 20px;
+      font-family: Tahoma, Arial, sans-serif;
+      background: linear-gradient(135deg, #eef3ff, #f8fbff);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding-top: 40px;
     }
 
     .card {
-      max-width: 400px;
-      margin: auto;
-      background: white;
-      border-radius: 15px;
+      background: #ffffff;
+      width: 100%;
+      max-width: 420px;
+      border-radius: 16px;
       padding: 25px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
       text-align: center;
     }
 
     h1 {
+      margin: 0;
       color: #1e88e5;
-      margin-bottom: 10px;
+      font-size: 26px;
     }
 
     #city {
-      font-size: 18px;
-      margin-bottom: 15px;
+      margin: 15px 0 20px;
+      font-size: 16px;
+      color: #444;
     }
 
     .time {
+      background: #f3f5f7;
+      margin: 10px 0;
+      padding: 14px;
+      border-radius: 12px;
       font-size: 18px;
-      margin: 8px 0;
     }
 
     button {
       margin-top: 20px;
-      padding: 12px 18px;
+      width: 100%;
+      padding: 14px;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       background: #1e88e5;
       color: white;
-      font-size: 16px;
+      font-size: 18px;
       cursor: pointer;
+    }
+
+    button:hover {
+      background: #1565c0;
     }
   </style>
 </head>
@@ -55,43 +69,32 @@
 
   <div class="card">
     <h1>مواقيتي 🕌</h1>
-    <div id="city">📍 موقعك</div>
 
-    <div class="time" id="fajr"></div>
-    <div class="time" id="dhuhr"></div>
-    <div class="time" id="asr"></div>
-    <div class="time" id="maghrib"></div>
-    <div class="time" id="isha"></div>
+    <div id="city">📍 اضغط الزر لتحديد موقعك</div>
+
+    <div class="time" id="fajr">الفجر: --:--</div>
+    <div class="time" id="dhuhr">الظهر: --:--</div>
+    <div class="time" id="asr">العصر: --:--</div>
+    <div class="time" id="maghrib">المغرب: --:--</div>
+    <div class="time" id="isha">العشاء: --:--</div>
 
     <button onclick="useMyLocation()">📍 استخدام موقعي الحالي</button>
   </div>
 
   <script>
-    // تحميل افتراضي (الرياض)
-    fetch("https://api.aladhan.com/v1/timingsByCity?city=Riyadh&country=Saudi Arabia&method=4")
-      .then(res => res.json())
-      .then(data => showTimings(data.data.timings, "الرياض"));
-
-    function showTimings(t, cityName) {
-      document.getElementById("city").innerText = "📍 " + cityName;
-      document.getElementById("fajr").innerText = "الفجر: " + t.Fajr;
-      document.getElementById("dhuhr").innerText = "الظهر: " + t.Dhuhr;
-      document.getElementById("asr").innerText = "العصر: " + t.Asr;
-      document.getElementById("maghrib").innerText = "المغرب: " + t.Maghrib;
-      document.getElementById("isha").innerText = "العشاء: " + t.Isha;
-    }
-
     function useMyLocation() {
       if (!navigator.geolocation) {
-        alert("الموقع الجغرافي غير مدعوم");
+        alert("المتصفح لا يدعم تحديد الموقع");
         return;
       }
+
+      document.getElementById("city").innerText = "📍 جاري تحديد موقعك...";
 
       navigator.geolocation.getCurrentPosition(position => {
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
 
-        // جلب اسم المدينة / القرية
+        // جلب اسم المدينة
         fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ar`)
           .then(res => res.json())
           .then(place => {
@@ -102,13 +105,23 @@
               place.address.hamlet ||
               "موقعك";
 
-            // جلب مواقيت الصلاة حسب الإحداثيات
-            fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=4`)
-              .then(res => res.json())
-              .then(data => {
-                showTimings(data.data.timings, city);
-              });
+            document.getElementById("city").innerText = "📍 " + city;
           });
+
+        // جلب مواقيت الصلاة
+        fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=4`)
+          .then(res => res.json())
+          .then(data => {
+            const t = data.data.timings;
+            document.getElementById("fajr").innerText    = "الفجر: " + t.Fajr;
+            document.getElementById("dhuhr").innerText   = "الظهر: " + t.Dhuhr;
+            document.getElementById("asr").innerText     = "العصر: " + t.Asr;
+            document.getElementById("maghrib").innerText = "المغرب: " + t.Maghrib;
+            document.getElementById("isha").innerText    = "العشاء: " + t.Isha;
+          });
+
+      }, () => {
+        alert("لم يتم السماح بتحديد الموقع");
       });
     }
   </script>
@@ -118,51 +131,65 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>مواقيتي</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مواقيتي</title>
 
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f3f6fa;
       margin: 0;
-      padding: 20px;
+      font-family: Tahoma, Arial, sans-serif;
+      background: linear-gradient(135deg, #eef3ff, #f8fbff);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding-top: 40px;
     }
 
     .card {
-      max-width: 400px;
-      margin: auto;
-      background: white;
-      border-radius: 15px;
+      background: #ffffff;
+      width: 100%;
+      max-width: 420px;
+      border-radius: 16px;
       padding: 25px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
       text-align: center;
     }
 
     h1 {
+      margin: 0;
       color: #1e88e5;
-      margin-bottom: 10px;
+      font-size: 26px;
     }
 
     #city {
-      font-size: 18px;
-      margin-bottom: 15px;
+      margin: 15px 0 20px;
+      font-size: 16px;
+      color: #444;
     }
 
     .time {
+      background: #f3f5f7;
+      margin: 10px 0;
+      padding: 14px;
+      border-radius: 12px;
       font-size: 18px;
-      margin: 8px 0;
     }
 
     button {
       margin-top: 20px;
-      padding: 12px 18px;
+      width: 100%;
+      padding: 14px;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       background: #1e88e5;
       color: white;
-      font-size: 16px;
+      font-size: 18px;
       cursor: pointer;
+    }
+
+    button:hover {
+      background: #1565c0;
     }
   </style>
 </head>
@@ -171,43 +198,32 @@
 
   <div class="card">
     <h1>مواقيتي 🕌</h1>
-    <div id="city">📍 موقعك</div>
 
-    <div class="time" id="fajr"></div>
-    <div class="time" id="dhuhr"></div>
-    <div class="time" id="asr"></div>
-    <div class="time" id="maghrib"></div>
-    <div class="time" id="isha"></div>
+    <div id="city">📍 اضغط الزر لتحديد موقعك</div>
+
+    <div class="time" id="fajr">الفجر: --:--</div>
+    <div class="time" id="dhuhr">الظهر: --:--</div>
+    <div class="time" id="asr">العصر: --:--</div>
+    <div class="time" id="maghrib">المغرب: --:--</div>
+    <div class="time" id="isha">العشاء: --:--</div>
 
     <button onclick="useMyLocation()">📍 استخدام موقعي الحالي</button>
   </div>
 
   <script>
-    // تحميل افتراضي (الرياض)
-    fetch("https://api.aladhan.com/v1/timingsByCity?city=Riyadh&country=Saudi Arabia&method=4")
-      .then(res => res.json())
-      .then(data => showTimings(data.data.timings, "الرياض"));
-
-    function showTimings(t, cityName) {
-      document.getElementById("city").innerText = "📍 " + cityName;
-      document.getElementById("fajr").innerText = "الفجر: " + t.Fajr;
-      document.getElementById("dhuhr").innerText = "الظهر: " + t.Dhuhr;
-      document.getElementById("asr").innerText = "العصر: " + t.Asr;
-      document.getElementById("maghrib").innerText = "المغرب: " + t.Maghrib;
-      document.getElementById("isha").innerText = "العشاء: " + t.Isha;
-    }
-
     function useMyLocation() {
       if (!navigator.geolocation) {
-        alert("الموقع الجغرافي غير مدعوم");
+        alert("المتصفح لا يدعم تحديد الموقع");
         return;
       }
+
+      document.getElementById("city").innerText = "📍 جاري تحديد موقعك...";
 
       navigator.geolocation.getCurrentPosition(position => {
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
 
-        // جلب اسم المدينة / القرية
+        // جلب اسم المدينة
         fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ar`)
           .then(res => res.json())
           .then(place => {
@@ -218,13 +234,23 @@
               place.address.hamlet ||
               "موقعك";
 
-            // جلب مواقيت الصلاة حسب الإحداثيات
-            fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=4`)
-              .then(res => res.json())
-              .then(data => {
-                showTimings(data.data.timings, city);
-              });
+            document.getElementById("city").innerText = "📍 " + city;
           });
+
+        // جلب مواقيت الصلاة
+        fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=4`)
+          .then(res => res.json())
+          .then(data => {
+            const t = data.data.timings;
+            document.getElementById("fajr").innerText    = "الفجر: " + t.Fajr;
+            document.getElementById("dhuhr").innerText   = "الظهر: " + t.Dhuhr;
+            document.getElementById("asr").innerText     = "العصر: " + t.Asr;
+            document.getElementById("maghrib").innerText = "المغرب: " + t.Maghrib;
+            document.getElementById("isha").innerText    = "العشاء: " + t.Isha;
+          });
+
+      }, () => {
+        alert("لم يتم السماح بتحديد الموقع");
       });
     }
   </script>
