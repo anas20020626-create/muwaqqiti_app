@@ -20,184 +20,100 @@ header {
   border-bottom: 1px solid gold;
 }
 
-.page { display: none; padding: 15px; }
-.page.active { display: block; }
-
-nav {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  background: #081f36;
-  display: flex;
-  border-top: 1px solid gold;
-}
-
-nav button {
-  flex: 1;
-  background: none;
-  border: none;
-  color: gold;
-  padding: 10px;
-  font-size: 13px;
-}
-
 .card {
   background: rgba(255,215,0,0.08);
-  padding: 12px;
-  border-radius: 10px;
-  margin-bottom: 10px;
+  padding: 15px;
+  margin: 15px;
+  border-radius: 12px;
 }
 
-/* القبلة */
-.compass {
-  width: 230px;
-  height: 230px;
-  border-radius: 50%;
-  border: 6px solid gold;
-  margin: 20px auto;
-  position: relative;
+.prayer {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
 }
 
-.needle {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform-origin: bottom center;
-  transform: translate(-50%, -100%);
-  font-size: 40px;
-  color: red;
+.next {
+  background: rgba(255,215,0,0.2);
+  border-radius: 8px;
+  padding: 8px;
 }
 
-.kaaba {
-  position: absolute;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
+button {
+  background: gold;
+  color: #0b2a4a;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 5px;
+  font-weight: bold;
 }
 </style>
 </head>
 
 <body>
 
-<header>📿 موقّتي</header>
+<header>🕌 موقّتي</header>
 
-<!-- الرئيسية -->
-<div id="home" class="page active">
-  <h3 id="hijriDate"></h3>
-
-  <div class="card" id="prayers"></div>
+<div class="card">
+  <h3 id="hijri">📅</h3>
+  <div id="prayers"></div>
+  <p id="countdown"></p>
 
   <button onclick="loadPrayers(0)">اليوم</button>
   <button onclick="loadPrayers(1)">غدًا</button>
 </div>
 
-<!-- القبلة -->
-<div id="qibla" class="page">
-  <h3>🧭 القبلة</h3>
-  <button onclick="startCompass()">تشغيل</button>
-
-  <div class="compass">
-    <div class="kaaba">🕋</div>
-    <div class="needle" id="needle">▲</div>
-  </div>
-
-  <p id="qiblaStatus"></p>
-</div>
-
-<!-- القرآن -->
-<div id="quran" class="page">
-  <h3>📖 القرآن الكريم</h3>
-  <select id="surahSelect"></select>
-  <div id="ayahs"></div>
-</div>
-
-<!-- الأذكار -->
-<div id="azkar" class="page">
-  <h3>📿 أذكار</h3>
-  <div class="card">سبحان الله</div>
-  <div class="card">الحمد لله</div>
-  <div class="card">لا إله إلا الله</div>
-  <div class="card">الله أكبر</div>
-  <div class="card">اللهم صل على محمد</div>
-</div>
-
-<!-- الإعدادات -->
-<div id="settings" class="page">
-  <label>
-    <input type="checkbox" id="vibration" checked>
-    تفعيل الاهتزاز
-  </label>
-</div>
-
-<nav>
-  <button onclick="showPage('home')">🏠</button>
-  <button onclick="showPage('qibla')">🧭</button>
-  <button onclick="showPage('quran')">📖</button>
-  <button onclick="showPage('azkar')">📿</button>
-  <button onclick="showPage('settings')">⚙️</button>
-</nav>
-
 <script>
-function showPage(id) {
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-
-/* أوقات الصلاة + هجري */
 function loadPrayers(day) {
-  navigator.geolocation.getCurrentPosition(pos=>{
+  navigator.geolocation.getCurrentPosition(pos => {
     fetch(`https://api.aladhan.com/v1/timings/${day}?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&method=4`)
-    .then(r=>r.json())
-    .then(d=>{
-      document.getElementById("hijriDate").innerText =
-        "📅 " + d.data.date.hijri.date;
-      const t=d.data.timings;
-      document.getElementById("prayers").innerHTML =
-        `الفجر: ${t.Fajr}<br>الظهر: ${t.Dhuhr}<br>العصر: ${t.Asr}<br>المغرب: ${t.Maghrib}<br>العشاء: ${t.Isha}`;
-    });
+      .then(r => r.json())
+      .then(d => {
+        const t = d.data.timings;
+        document.getElementById("hijri").innerText =
+          "📅 " + d.data.date.hijri.date;
+
+        const prayers = [
+          ["الفجر", t.Fajr],
+          ["الظهر", t.Dhuhr],
+          ["العصر", t.Asr],
+          ["المغرب", t.Maghrib],
+          ["العشاء", t.Isha]
+        ];
+
+        let html = "";
+        prayers.forEach(p => {
+          html += `<div class="prayer"><span>${p[0]}</span><span>${p[1]}</span></div>`;
+        });
+
+        document.getElementById("prayers").innerHTML = html;
+        startCountdown(prayers);
+      });
   });
 }
+
+function startCountdown(prayers) {
+  clearInterval(window.timer);
+  window.timer = setInterval(() => {
+    const now = new Date();
+    for (let p of prayers) {
+      const [h, m] = p[1].split(":");
+      const time = new Date();
+      time.setHours(h, m, 0, 0);
+      if (time > now) {
+        const diff = time - now;
+        const min = Math.floor(diff / 60000);
+        const sec = Math.floor((diff % 60000) / 1000);
+        document.getElementById("countdown").innerText =
+          `⏳ الصلاة القادمة: ${p[0]} بعد ${min} دقيقة و ${sec} ثانية`;
+        return;
+      }
+    }
+  }, 1000);
+}
+
 loadPrayers(0);
-
-/* القرآن API */
-fetch("https://api.alquran.cloud/v1/surah")
-.then(r=>r.json())
-.then(d=>{
-  d.data.forEach(s=>{
-    const o=document.createElement("option");
-    o.value=s.number;
-    o.textContent=s.number+" - "+s.name;
-    surahSelect.appendChild(o);
-  });
-});
-
-surahSelect.onchange=()=>{
-  fetch(`https://api.alquran.cloud/v1/surah/${surahSelect.value}`)
-  .then(r=>r.json())
-  .then(d=>{
-    ayahs.innerHTML="";
-    d.data.ayahs.forEach(a=>{
-      ayahs.innerHTML+=`<p>${a.text} (${a.numberInSurah})</p>`;
-    });
-  });
-};
-
-/* القبلة */
-const K_LAT=21.4225, K_LNG=39.8262;
-function startCompass(){
-navigator.geolocation.getCurrentPosition(p=>{
-const lat=p.coords.latitude,lng=p.coords.longitude;
-const q=Math.atan2(
-Math.sin((K_LNG-lng)*Math.PI/180),
-Math.cos(lat*Math.PI/180)*Math.tan(K_LAT*Math.PI/180)-Math.sin(lat*Math.PI/180)*Math.cos((K_LNG-lng)*Math.PI/180)
-)*180/Math.PI;
-window.ondeviceorientation=e=>{
-const d=(q-(360-e.alpha)+360)%360;
-needle.style.transform=`translate(-50%,-100%) rotate(${d}deg)`;
-if(Math.abs(d)<5&&vibration.checked)navigator.vibrate(200);
-};
-});
-}
 </script>
 
 </body>
