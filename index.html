@@ -12,15 +12,21 @@ body{
   background:#f6e7b2;
   color:#1f2d3d;
 }
+
+/* زخرفة الاسم */
 header{
   background:#1f2d3d;
-  color:gold;
+  color:#d4af37;
   text-align:center;
-  padding:18px;
-  font-size:28px;
+  padding:22px;
+  font-size:32px;
+  letter-spacing:6px;
   font-weight:bold;
+  font-family:"Georgia","Times New Roman";
 }
+
 .container{padding:15px}
+
 button{
   padding:10px 18px;
   border:none;
@@ -30,6 +36,7 @@ button{
   font-size:16px;
   cursor:pointer;
 }
+
 .card{
   background:white;
   border-radius:14px;
@@ -37,6 +44,7 @@ button{
   margin-top:15px;
   box-shadow:0 4px 10px rgba(0,0,0,.15);
 }
+
 .prayer{
   display:flex;
   justify-content:space-between;
@@ -44,18 +52,19 @@ button{
   border-radius:10px;
   margin:6px 0;
 }
+
 .next{
-  background:gold;
+  background:#d4af37;
   font-weight:bold;
 }
+
 #countdown{
   text-align:center;
   font-size:18px;
-  margin-top:10px;
-  color:#1f2d3d;
+  margin-top:12px;
 }
 
-/* Modal */
+/* نافذة منبثقة */
 .modal{
   display:none;
   position:fixed;
@@ -64,6 +73,7 @@ button{
   justify-content:center;
   align-items:center;
 }
+
 .modal-content{
   background:#fff3c4;
   padding:20px;
@@ -72,30 +82,18 @@ button{
   max-width:350px;
   text-align:center;
 }
-select,input{
-  padding:8px;
-  border-radius:8px;
-  font-size:15px;
-}
 </style>
 </head>
 
 <body>
 
-<header>✨ مواقيتي ✨</header>
+<header>
+مــــوَاقِيــــتــي
+</header>
 
 <div class="container">
 
-<select id="citySelect" onchange="render()">
-  <option value="Makkah">مكة</option>
-  <option value="Riyadh">الرياض</option>
-  <option value="Jeddah">جدة</option>
-  <option value="Dammam">الدمام</option>
-  <option value="Abha">أبها</option>
-</select>
-
-<br><br>
-<button onclick="openModal()">📅 اختيار التاريخ</button>
+<button onclick="openModal()">اختيار التاريخ</button>
 
 <div class="card" id="hijriDate"></div>
 <div class="card" id="prayers"></div>
@@ -103,52 +101,55 @@ select,input{
 
 </div>
 
-<!-- Modal -->
+<!-- نافذة اختيار التاريخ -->
 <div class="modal" id="modal">
   <div class="modal-content">
-    <h3>اختر التاريخ</h3>
+    <h3>اختر التاريخ الميلادي</h3>
     <input type="date" id="dateInput">
     <br><br>
-    <button onclick="applyDate()">تم</button>
-    <button onclick="closeModal()">إلغاء</button>
+    <button onclick="applyDate()">موافق</button>
   </div>
 </div>
 
 <script>
 let selectedDate = new Date();
-let countdownInterval;
+let timer;
 
-function openModal(){ document.getElementById("modal").style.display="flex"; }
-function closeModal(){ document.getElementById("modal").style.display="none"; }
+/* فتح وإغلاق */
+function openModal(){ modal.style.display="flex"; }
+function closeModal(){ modal.style.display="none"; }
 
 function applyDate(){
-  const v = document.getElementById("dateInput").value;
-  if(v){ selectedDate = new Date(v); render(); }
+  const v = dateInput.value;
+  if(v) selectedDate = new Date(v);
   closeModal();
+  render();
 }
 
+/* تاريخ هجري صحيح */
 function hijriText(date){
   return new Intl.DateTimeFormat('ar-SA-u-ca-islamic',{
-    weekday:'long', day:'numeric', month:'long', year:'numeric'
+    weekday:'long',
+    day:'numeric',
+    month:'long',
+    year:'numeric'
   }).format(date);
 }
 
 async function render(){
-  clearInterval(countdownInterval);
+  clearInterval(timer);
 
-  document.getElementById("hijriDate").innerText =
-    "📆 " + hijriText(selectedDate);
+  hijriDate.innerText = "التاريخ الهجري: " + hijriText(selectedDate);
 
-  const city = citySelect.value;
-  const d = selectedDate.getDate();
-  const m = selectedDate.getMonth()+1;
-  const y = selectedDate.getFullYear();
+  const day = selectedDate.getDate();
+  const month = selectedDate.getMonth()+1;
+  const year = selectedDate.getFullYear();
 
   const res = await fetch(
-    `https://api.aladhan.com/v1/calendarByCity?city=${city}&country=Saudi Arabia&method=4&month=${m}&year=${y}`
+    `https://api.aladhan.com/v1/calendarByCity?city=Makkah&country=Saudi Arabia&method=4&month=${month}&year=${year}`
   );
   const data = await res.json();
-  const t = data.data[d-1].timings;
+  const t = data.data[day-1].timings;
 
   const prayers = [
     {n:"الفجر", t:t.Fajr},
@@ -158,41 +159,54 @@ async function render(){
     {n:"العشاء", t:t.Isha}
   ];
 
-  const list = document.getElementById("prayers");
-  list.innerHTML = "<h3>🕌 مواقيت الصلاة</h3>";
+  prayersDiv.innerHTML = "<h3>مواقيت الصلاة</h3>";
 
+  const today = new Date().toDateString();
+  const isToday = selectedDate.toDateString() === today;
   const now = new Date();
-  let nextTime=null, nextName="";
+  let nextPrayerTime = null;
+  let nextPrayerName = "";
 
-  prayers.forEach(p=>{
+  prayers.forEach((p,index)=>{
     const div=document.createElement("div");
     div.className="prayer";
+
     const [h,m]=p.t.split(":");
     const pt=new Date(selectedDate);
     pt.setHours(h,m,0);
 
-    if(!nextTime && pt>now && selectedDate.toDateString()===now.toDateString()){
-      div.classList.add("next");
-      nextTime=pt; nextName=p.n;
+    if(!nextPrayerTime){
+      if(isToday){
+        if(pt > now){
+          div.classList.add("next");
+          nextPrayerTime = pt;
+          nextPrayerName = p.n;
+        }
+      }else if(index === 0){
+        div.classList.add("next");
+        nextPrayerTime = pt;
+        nextPrayerName = p.n;
+      }
     }
+
     div.innerHTML=`<span>${p.n}</span><span>${p.t}</span>`;
-    list.appendChild(div);
+    prayersDiv.appendChild(div);
   });
 
-  if(nextTime){
-    countdownInterval=setInterval(()=>{
-      const diff=nextTime-new Date();
-      if(diff<=0){ clearInterval(countdownInterval); render(); return; }
+  if(nextPrayerTime){
+    timer=setInterval(()=>{
+      const diff = nextPrayerTime - new Date();
+      if(diff<=0){ clearInterval(timer); render(); return; }
       const h=Math.floor(diff/3600000);
       const m=Math.floor((diff%3600000)/60000);
       const s=Math.floor((diff%60000)/1000);
-      countdown.innerText=`الصلاة القادمة (${nextName}) بعد ${h}:${m}:${s}`;
+      countdown.innerText =
+        `الصلاة القادمة (${nextPrayerName}) بعد ${h}س ${m}د ${s}ث`;
     },1000);
-  }else{
-    countdown.innerText="لا توجد صلاة قادمة اليوم";
   }
 }
 
+const prayersDiv = document.getElementById("prayers");
 render();
 </script>
 
