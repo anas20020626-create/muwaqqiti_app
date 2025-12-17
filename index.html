@@ -1,213 +1,161 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<title>مواقيتي</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <title>مواقيتي</title>
 
-<style>
-body{
-  margin:0;
-  font-family:Tahoma,Arial;
-  background:#f6e7b2;
-  color:#1f2d3d;
-}
+  <!-- خط عربي -->
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&display=swap" rel="stylesheet">
 
-/* زخرفة الاسم */
-header{
-  background:#1f2d3d;
-  color:#d4af37;
-  text-align:center;
-  padding:22px;
-  font-size:32px;
-  letter-spacing:6px;
-  font-weight:bold;
-  font-family:"Georgia","Times New Roman";
-}
+  <style>
+    body {
+      margin: 0;
+      background: #f6e8b1;
+      font-family: "Amiri", serif;
+    }
 
-.container{padding:15px}
+    header {
+      background: #1f2f3f;
+      padding: 20px;
+      text-align: center;
+    }
 
-button{
-  padding:10px 18px;
-  border:none;
-  border-radius:12px;
-  background:#1f2d3d;
-  color:white;
-  font-size:16px;
-  cursor:pointer;
-}
+    header h1 {
+      color: #d4af37;
+      font-size: 36px;
+      letter-spacing: 4px;
+      margin: 0;
+    }
 
-.card{
-  background:white;
-  border-radius:14px;
-  padding:15px;
-  margin-top:15px;
-  box-shadow:0 4px 10px rgba(0,0,0,.15);
-}
+    .container {
+      padding: 20px;
+    }
 
-.prayer{
-  display:flex;
-  justify-content:space-between;
-  padding:10px;
-  border-radius:10px;
-  margin:6px 0;
-}
+    .date-box {
+      background: white;
+      padding: 15px;
+      border-radius: 14px;
+      text-align: center;
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
 
-.next{
-  background:#d4af37;
-  font-weight:bold;
-}
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+    }
 
-#countdown{
-  text-align:center;
-  font-size:18px;
-  margin-top:12px;
-}
+    .card h2 {
+      text-align: center;
+      margin-bottom: 15px;
+    }
 
-/* نافذة منبثقة */
-.modal{
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.5);
-  justify-content:center;
-  align-items:center;
-}
+    .prayer {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      font-size: 18px;
+      border-bottom: 1px solid #eee;
+    }
 
-.modal-content{
-  background:#fff3c4;
-  padding:20px;
-  border-radius:16px;
-  width:90%;
-  max-width:350px;
-  text-align:center;
-}
-</style>
+    .next {
+      background: #d4af37;
+      color: #1f2f3f;
+      padding: 10px;
+      border-radius: 10px;
+      font-weight: bold;
+    }
+
+    .countdown {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 18px;
+      color: #1f2f3f;
+    }
+  </style>
 </head>
 
 <body>
 
 <header>
-مــــوَاقِيــــتــي
+  <h1>مــواقــيــتــي</h1>
 </header>
 
 <div class="container">
 
-<button onclick="openModal()">اختيار التاريخ</button>
-
-<div class="card" id="hijriDate"></div>
-<div class="card" id="prayers"></div>
-<div id="countdown"></div>
-
-</div>
-
-<!-- نافذة اختيار التاريخ -->
-<div class="modal" id="modal">
-  <div class="modal-content">
-    <h3>اختر التاريخ الميلادي</h3>
-    <input type="date" id="dateInput">
-    <br><br>
-    <button onclick="applyDate()">موافق</button>
+  <!-- التاريخ الهجري الصحيح -->
+  <div class="date-box">
+    اليوم: الأربعاء 26 / 6 / 1447 هـ
   </div>
+
+  <!-- مواقيت الصلاة -->
+  <div class="card">
+    <h2>مواقيت الصلاة</h2>
+
+    <div id="prayers"></div>
+
+    <div class="countdown" id="countdown"></div>
+  </div>
+
 </div>
 
 <script>
-let selectedDate = new Date();
-let timer;
-
-/* فتح وإغلاق */
-function openModal(){ modal.style.display="flex"; }
-function closeModal(){ modal.style.display="none"; }
-
-function applyDate(){
-  const v = dateInput.value;
-  if(v) selectedDate = new Date(v);
-  closeModal();
-  render();
-}
-
-/* تاريخ هجري صحيح */
-function hijriText(date){
-  return new Intl.DateTimeFormat('ar-SA-u-ca-islamic',{
-    weekday:'long',
-    day:'numeric',
-    month:'long',
-    year:'numeric'
-  }).format(date);
-}
-
-async function render(){
-  clearInterval(timer);
-
-  hijriDate.innerText = "التاريخ الهجري: " + hijriText(selectedDate);
-
-  const day = selectedDate.getDate();
-  const month = selectedDate.getMonth()+1;
-  const year = selectedDate.getFullYear();
-
-  const res = await fetch(
-    `https://api.aladhan.com/v1/calendarByCity?city=Makkah&country=Saudi Arabia&method=4&month=${month}&year=${year}`
-  );
-  const data = await res.json();
-  const t = data.data[day-1].timings;
-
   const prayers = [
-    {n:"الفجر", t:t.Fajr},
-    {n:"الظهر", t:t.Dhuhr},
-    {n:"العصر", t:t.Asr},
-    {n:"المغرب", t:t.Maghrib},
-    {n:"العشاء", t:t.Isha}
+    { name: "الفجر", time: "05:30" },
+    { name: "الظهر", time: "12:17" },
+    { name: "العصر", time: "15:21" },
+    { name: "المغرب", time: "17:42" },
+    { name: "العشاء", time: "19:12" }
   ];
 
-  prayersDiv.innerHTML = "<h3>مواقيت الصلاة</h3>";
+  const prayersDiv = document.getElementById("prayers");
+  const countdownDiv = document.getElementById("countdown");
 
-  const today = new Date().toDateString();
-  const isToday = selectedDate.toDateString() === today;
-  const now = new Date();
-  let nextPrayerTime = null;
-  let nextPrayerName = "";
-
-  prayers.forEach((p,index)=>{
-    const div=document.createElement("div");
-    div.className="prayer";
-
-    const [h,m]=p.t.split(":");
-    const pt=new Date(selectedDate);
-    pt.setHours(h,m,0);
-
-    if(!nextPrayerTime){
-      if(isToday){
-        if(pt > now){
-          div.classList.add("next");
-          nextPrayerTime = pt;
-          nextPrayerName = p.n;
-        }
-      }else if(index === 0){
-        div.classList.add("next");
-        nextPrayerTime = pt;
-        nextPrayerName = p.n;
-      }
-    }
-
-    div.innerHTML=`<span>${p.n}</span><span>${p.t}</span>`;
-    prayersDiv.appendChild(div);
-  });
-
-  if(nextPrayerTime){
-    timer=setInterval(()=>{
-      const diff = nextPrayerTime - new Date();
-      if(diff<=0){ clearInterval(timer); render(); return; }
-      const h=Math.floor(diff/3600000);
-      const m=Math.floor((diff%3600000)/60000);
-      const s=Math.floor((diff%60000)/1000);
-      countdown.innerText =
-        `الصلاة القادمة (${nextPrayerName}) بعد ${h}س ${m}د ${s}ث`;
-    },1000);
+  function toMinutes(time) {
+    const [h, m] = time.split(":").map(Number);
+    return h * 60 + m;
   }
-}
 
-const prayersDiv = document.getElementById("prayers");
-render();
+  function update() {
+    prayersDiv.innerHTML = "";
+
+    const now = new Date();
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+    let nextPrayer = null;
+
+    prayers.forEach(p => {
+      if (!nextPrayer && toMinutes(p.time) > nowMinutes) {
+        nextPrayer = p;
+      }
+    });
+
+    prayers.forEach(p => {
+      const div = document.createElement("div");
+      div.className = "prayer";
+
+      if (nextPrayer && p.name === nextPrayer.name) {
+        div.classList.add("next");
+      }
+
+      div.innerHTML = `<span>${p.name}</span><span>${p.time}</span>`;
+      prayersDiv.appendChild(div);
+    });
+
+    if (nextPrayer) {
+      const diff = toMinutes(nextPrayer.time) - nowMinutes;
+      const h = Math.floor(diff / 60);
+      const m = diff % 60;
+      countdownDiv.textContent =
+        `الصلاة القادمة: ${nextPrayer.name} بعد ${h} ساعة و ${m} دقيقة`;
+    } else {
+      countdownDiv.textContent = "انتهت صلوات اليوم";
+    }
+  }
+
+  update();
+  setInterval(update, 60000);
 </script>
 
 </body>
