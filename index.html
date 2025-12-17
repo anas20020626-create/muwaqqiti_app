@@ -3,34 +3,64 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>بوصلة القبلة</title>
+<title>موقّتي</title>
 
 <style>
 body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
   background: #0b2a4a;
   color: gold;
-  font-family: system-ui, sans-serif;
+}
+
+header {
   text-align: center;
-  margin: 0;
-  padding: 0;
+  padding: 15px;
+  font-size: 20px;
+  border-bottom: 1px solid gold;
+}
+
+.page {
+  display: none;
+  padding: 15px;
+}
+
+.page.active {
+  display: block;
+}
+
+nav {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: #081f36;
+  display: flex;
+  justify-content: space-around;
+  border-top: 1px solid gold;
+}
+
+nav button {
+  flex: 1;
+  background: none;
+  border: none;
+  color: gold;
+  padding: 10px;
+  font-size: 14px;
 }
 
 h2 {
-  margin-top: 20px;
+  text-align: center;
 }
 
-.compass-container {
-  margin-top: 30px;
-}
-
+/* القبلة */
 .compass {
-  width: 260px;
-  height: 260px;
+  width: 240px;
+  height: 240px;
   border-radius: 50%;
-  border: 8px solid gold;
-  margin: auto;
+  border: 6px solid gold;
+  margin: 20px auto;
   position: relative;
-  background: radial-gradient(circle, #123c66 60%, #0b2a4a);
+  background: radial-gradient(circle, #123c66, #0b2a4a);
 }
 
 .needle {
@@ -41,7 +71,6 @@ h2 {
   transform: translate(-50%, -100%) rotate(0deg);
   font-size: 40px;
   color: red;
-  transition: transform 0.15s linear;
 }
 
 .kaaba {
@@ -49,103 +78,142 @@ h2 {
   top: 10px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 22px;
 }
 
-.status {
-  margin-top: 15px;
-  font-size: 18px;
-}
-button {
-  margin-top: 20px;
-  padding: 10px 20px;
-  background: gold;
-  border: none;
+/* أذكار */
+.zikr {
+  background: rgba(255,215,0,0.08);
+  padding: 10px;
+  margin-bottom: 10px;
   border-radius: 8px;
-  font-size: 16px;
+}
+
+/* إعدادات */
+.setting {
+  margin: 15px 0;
 }
 </style>
 </head>
 
 <body>
 
-<h2>🧭 بوصلة القبلة</h2>
+<header>📿 موقّتي</header>
 
-<button onclick="startCompass()">تشغيل البوصلة</button>
+<!-- الصفحة الرئيسية -->
+<div id="home" class="page active">
+  <h2>🕌 مرحبًا بك</h2>
+  <p style="text-align:center">
+    تطبيق موقّتي – قيد التطوير  
+    <br>أوقات الصلاة ستُضاف لاحقًا
+  </p>
+</div>
 
-<div class="compass-container">
+<!-- القبلة -->
+<div id="qibla" class="page">
+  <h2>🧭 القبلة</h2>
+  <button onclick="startCompass()">تشغيل البوصلة</button>
+
   <div class="compass">
     <div class="kaaba">🕋</div>
     <div class="needle" id="needle">▲</div>
   </div>
+
+  <p id="qiblaStatus" style="text-align:center">وجّه الهاتف</p>
 </div>
 
-<p class="status" id="status">اضغط تشغيل ووجّه الهاتف</p>
+<!-- الأذكار -->
+<div id="azkar" class="page">
+  <h2>📿 الأذكار</h2>
+
+  <h3>أذكار الصباح</h3>
+  <div class="zikr">أصبحنا وأصبح الملك لله</div>
+  <div class="zikr">اللهم بك أصبحنا وبك أمسينا</div>
+  <div class="zikr">سبحان الله وبحمده (100 مرة)</div>
+  <div class="zikr">لا إله إلا الله وحده لا شريك له</div>
+  <div class="zikr">رضيت بالله ربًا وبالإسلام دينًا</div>
+  <div class="zikr">اللهم عافني في بدني</div>
+  <div class="zikr">أعوذ بكلمات الله التامات</div>
+  <div class="zikr">اللهم إني أسألك خير هذا اليوم</div>
+  <div class="zikr">حسبي الله لا إله إلا هو</div>
+  <div class="zikr">اللهم صل وسلم على نبينا محمد</div>
+
+  <h3>أذكار المساء</h3>
+  <div class="zikr">أمسينا وأمسى الملك لله</div>
+  <div class="zikr">اللهم بك أمسينا وبك أصبحنا</div>
+  <div class="zikr">أعوذ بك من شر ما خلق</div>
+  <div class="zikr">سبحان الله وبحمده</div>
+  <div class="zikr">اللهم إني أعوذ بك من الهم والحزن</div>
+</div>
+
+<!-- الإعدادات -->
+<div id="settings" class="page">
+  <h2>⚙️ الإعدادات</h2>
+
+  <div class="setting">
+    <label>
+      <input type="checkbox" id="vibrationToggle" checked>
+      تفعيل الاهتزاز عند القبلة
+    </label>
+  </div>
+</div>
+
+<!-- التنقل -->
+<nav>
+  <button onclick="showPage('home')">🏠 الرئيسية</button>
+  <button onclick="showPage('qibla')">🧭 القبلة</button>
+  <button onclick="showPage('azkar')">📿 الأذكار</button>
+  <button onclick="showPage('settings')">⚙️ الإعدادات</button>
+</nav>
 
 <script>
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+/* القبلة */
 const KAABA_LAT = 21.4225;
 const KAABA_LNG = 39.8262;
-let qiblaDirection = null;
+let qiblaDir = null;
 let vibrated = false;
 
-// حساب اتجاه القبلة
-function getQiblaDirection(lat, lng) {
-  const φ1 = lat * Math.PI / 180;
-  const φ2 = KAABA_LAT * Math.PI / 180;
-  const Δλ = (KAABA_LNG - lng) * Math.PI / 180;
-
-  const y = Math.sin(Δλ);
-  const x = Math.cos(φ1) * Math.tan(φ2) - Math.sin(φ1) * Math.cos(Δλ);
-  let θ = Math.atan2(y, x) * 180 / Math.PI;
-  return (θ + 360) % 360;
+function getQibla(lat, lng) {
+  const dLng = (KAABA_LNG - lng) * Math.PI / 180;
+  const y = Math.sin(dLng);
+  const x = Math.cos(lat * Math.PI / 180) * Math.tan(KAABA_LAT * Math.PI / 180)
+            - Math.sin(lat * Math.PI / 180) * Math.cos(dLng);
+  return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
 }
 
 function startCompass() {
-  if (typeof DeviceOrientationEvent !== "undefined" &&
-      typeof DeviceOrientationEvent.requestPermission === "function") {
-    DeviceOrientationEvent.requestPermission().then(response => {
-      if (response === "granted") initCompass();
-    });
-  } else {
-    initCompass();
-  }
-}
-
-function initCompass() {
   navigator.geolocation.getCurrentPosition(pos => {
-    const lat = pos.coords.latitude;
-    const lng = pos.coords.longitude;
-    qiblaDirection = getQiblaDirection(lat, lng);
+    qiblaDir = getQibla(pos.coords.latitude, pos.coords.longitude);
 
-    window.addEventListener("deviceorientationabsolute", handleOrientation, true);
-    window.addEventListener("deviceorientation", handleOrientation, true);
-  }, () => {
-    document.getElementById("status").innerText = "❌ لم يتم السماح بالموقع";
+    window.addEventListener("deviceorientation", e => {
+      if (!e.alpha) return;
+
+      const heading = 360 - e.alpha;
+      const diff = (qiblaDir - heading + 360) % 360;
+
+      document.getElementById("needle").style.transform =
+        `translate(-50%, -100%) rotate(${diff}deg)`;
+
+      const angle = Math.abs(diff > 180 ? diff - 360 : diff);
+      const vibOn = document.getElementById("vibrationToggle").checked;
+
+      if (angle < 5) {
+        document.getElementById("qiblaStatus").innerText = "✅ هذه القبلة";
+        if (vibOn && !vibrated) {
+          navigator.vibrate(300);
+          vibrated = true;
+        }
+      } else {
+        document.getElementById("qiblaStatus").innerText =
+          "انحراف: " + angle.toFixed(1) + "°";
+        vibrated = false;
+      }
+    });
   });
-}
-
-function handleOrientation(e) {
-  if (!e.alpha || qiblaDirection === null) return;
-
-  const heading = 360 - e.alpha;
-  const diff = (qiblaDirection - heading + 360) % 360;
-
-  document.getElementById("needle").style.transform =
-    `translate(-50%, -100%) rotate(${diff}deg)`;
-
-  const angle = Math.abs(diff > 180 ? diff - 360 : diff);
-
-  if (angle < 5) {
-    document.getElementById("status").innerText = "✅ هذه القبلة";
-    if (!vibrated) {
-      navigator.vibrate(300);
-      vibrated = true;
-    }
-  } else {
-    document.getElementById("status").innerText =
-      "📐 انحراف: " + angle.toFixed(1) + "°";
-    vibrated = false;
-  }
 }
 </script>
 
