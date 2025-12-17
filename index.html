@@ -1,142 +1,212 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>القرآن الكريم</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>مواقيتي</title>
 
-  <!-- خط عثمان طه (بديل ويب قريب) -->
-  <link href="https://fonts.googleapis.com/css2?family=Amiri&display=swap" rel="stylesheet">
+<style>
+body {
+  margin: 0;
+  font-family: "Tahoma", sans-serif;
+  background: #f6e7b2;
+  color: #0b2a4a;
+}
 
-  <style>
-    :root {
-      --dark-bg: #0b1c2d;
-      --dark-text: #d4af37;
-      --light-bg: #f3e7b3;
-      --light-text: #0b1c2d;
-      --card-radius: 16px;
-    }
+header {
+  text-align: center;
+  padding: 15px;
+  font-size: 22px;
+  font-weight: bold;
+}
 
-    body {
-      margin: 0;
-      font-family: 'Amiri', serif;
-      background: var(--dark-bg);
-      color: var(--dark-text);
-      transition: 0.3s;
-    }
+.page {
+  display: none;
+  padding: 15px;
+}
 
-    header {
-      text-align: center;
-      padding: 15px;
-      font-size: 22px;
-      font-weight: bold;
-    }
+.page.active {
+  display: block;
+}
 
-    .container {
-      padding: 15px;
-      max-width: 600px;
-      margin: auto;
-    }
+.card {
+  background: #fff3cc;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 15px;
+}
 
-    select {
-      width: 100%;
-      padding: 12px;
-      border-radius: var(--card-radius);
-      border: none;
-      font-size: 18px;
-      font-family: 'Amiri', serif;
-      margin-bottom: 15px;
-    }
+select, input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
 
-    .ayah {
-      background: rgba(255,255,255,0.05);
-      border-radius: var(--card-radius);
-      padding: 12px;
-      margin-bottom: 10px;
-      font-size: 20px;
-      line-height: 1.9;
-    }
+nav {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: #0b2a4a;
+  display: flex;
+  justify-content: space-around;
+  color: #f6e7b2;
+}
 
-    .ayah span {
-      display: block;
-      font-size: 14px;
-      opacity: 0.8;
-      margin-top: 5px;
-    }
+nav button {
+  background: none;
+  border: none;
+  color: inherit;
+  padding: 12px;
+  font-size: 14px;
+}
 
-    .toggle {
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      background: none;
-      border: none;
-      font-size: 22px;
-      cursor: pointer;
-      color: inherit;
-    }
-
-    .light {
-      background: var(--light-bg);
-      color: var(--light-text);
-    }
-
-    .light .ayah {
-      background: rgba(0,0,0,0.05);
-    }
-  </style>
+.qibla {
+  font-size: 60px;
+  text-align: center;
+  transform: rotate(0deg);
+}
+</style>
 </head>
 
 <body>
 
-<button class="toggle" onclick="toggleTheme()">🌙</button>
+<header>🕌 مواقيتي</header>
 
-<header>القرآن الكريم</header>
-
-<div class="container">
-
-  <select id="surahSelect" onchange="loadSurah()"></select>
-
-  <div id="ayahs"></div>
-
+<!-- الرئيسية -->
+<div class="page active" id="home">
+  <div class="card">
+    مرحبًا بك في تطبيق مواقيتي  
+    <br>اختر من الأسفل ما تريد 🌙
+  </div>
 </div>
 
+<!-- القرآن -->
+<div class="page" id="quran">
+  <div class="card">
+    <h3>📖 القرآن الكريم</h3>
+    <select id="surahSelect"></select>
+    <div id="ayahs"></div>
+  </div>
+</div>
+
+<!-- الأذكار -->
+<div class="page" id="azkar">
+  <div class="card">
+    <h3>📿 الأذكار</h3>
+    <select id="zikrType">
+      <option value="morning">أذكار الصباح</option>
+      <option value="evening">أذكار المساء</option>
+      <option value="prayer">أذكار بعد الصلاة</option>
+    </select>
+    <div id="zikrText"></div>
+  </div>
+</div>
+
+<!-- القبلة -->
+<div class="page" id="qibla">
+  <div class="card">
+    <h3>🧭 القبلة</h3>
+    <div class="qibla" id="arrow">⬆️</div>
+    <p style="text-align:center;">اتجه بالسهم نحو القبلة</p>
+  </div>
+</div>
+
+<!-- الإعدادات -->
+<div class="page" id="settings">
+  <div class="card">
+    <h3>⚙️ الإعدادات</h3>
+    <input id="cityInput" placeholder="اكتب اسم المدينة">
+    <button onclick="saveCity()">حفظ المدينة</button>
+    <p id="savedCity"></p>
+  </div>
+</div>
+
+<!-- التنقل -->
+<nav>
+  <button onclick="showPage('home')">الرئيسية</button>
+  <button onclick="showPage('quran')">القرآن</button>
+  <button onclick="showPage('azkar')">الأذكار</button>
+  <button onclick="showPage('qibla')">القبلة</button>
+  <button onclick="showPage('settings')">الإعدادات</button>
+</nav>
+
 <script>
-let quranData = [];
-let darkMode = true;
-
-fetch("quran.json")
-  .then(res => res.json())
-  .then(data => {
-    quranData = data.surahs;
-    const select = document.getElementById("surahSelect");
-
-    quranData.forEach((s, i) => {
-      const option = document.createElement("option");
-      option.value = i;
-      option.textContent = s.number + " - " + s.name;
-      select.appendChild(option);
-    });
-
-    loadSurah();
-  });
-
-function loadSurah() {
-  const index = document.getElementById("surahSelect").value;
-  const ayahsBox = document.getElementById("ayahs");
-  ayahsBox.innerHTML = "";
-
-  quranData[index].ayahs.forEach((ayah, i) => {
-    const div = document.createElement("div");
-    div.className = "ayah";
-    div.innerHTML = ayah + `<span>(${i + 1})</span>`;
-    ayahsBox.appendChild(div);
-  });
+// التنقل
+function showPage(id) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
 }
 
-function toggleTheme() {
-  darkMode = !darkMode;
-  document.body.classList.toggle("light");
+// القرآن (نموذج)
+const quran = [
+  {
+    name: "الفاتحة",
+    ayahs: [
+      "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+      "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
+      "الرَّحْمَٰنِ الرَّحِيمِ",
+      "مَالِكِ يَوْمِ الدِّينِ",
+      "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+      "اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ",
+      "صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ"
+    ]
+  },
+  {
+    name: "الإخلاص",
+    ayahs: [
+      "قُلْ هُوَ اللَّهُ أَحَدٌ",
+      "اللَّهُ الصَّمَدُ",
+      "لَمْ يَلِدْ وَلَمْ يُولَدْ",
+      "وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ"
+    ]
+  }
+];
+
+const surahSelect = document.getElementById("surahSelect");
+quran.forEach((s, i) => {
+  const o = document.createElement("option");
+  o.value = i;
+  o.textContent = s.name;
+  surahSelect.appendChild(o);
+});
+
+surahSelect.onchange = () => {
+  const box = document.getElementById("ayahs");
+  box.innerHTML = "";
+  quran[surahSelect.value].ayahs.forEach((a, i) => {
+    box.innerHTML += `<p>﴿${a}﴾ (${i+1})</p>`;
+  });
+};
+surahSelect.onchange();
+
+// الأذكار
+const azkar = {
+  morning: "أصبحنا وأصبح الملك لله...",
+  evening: "أمسينا وأمسى الملك لله...",
+  prayer: "أستغفر الله (3) اللهم أنت السلام..."
+};
+
+document.getElementById("zikrType").onchange = e => {
+  document.getElementById("zikrText").innerText = azkar[e.target.value];
+};
+document.getElementById("zikrText").innerText = azkar.morning;
+
+// القبلة (سهم تجريبي)
+window.addEventListener("deviceorientation", e => {
+  document.getElementById("arrow").style.transform =
+    `rotate(${360 - e.alpha}deg)`;
+});
+
+// الإعدادات
+function saveCity() {
+  const city = document.getElementById("cityInput").value;
+  localStorage.setItem("city", city);
+  document.getElementById("savedCity").innerText = "📍 المدينة: " + city;
 }
+
+const saved = localStorage.getItem("city");
+if (saved) document.getElementById("savedCity").innerText = "📍 المدينة: " + saved;
 </script>
 
 </body>
