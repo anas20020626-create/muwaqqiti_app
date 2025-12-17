@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>موقّتي</title>
+<title>مواقيتي</title>
 
 <style>
 body {
@@ -13,30 +13,55 @@ body {
   color: gold;
 }
 
+/* اسم التطبيق */
 header {
   text-align: center;
-  padding: 15px;
-  font-size: 20px;
+  padding: 18px;
+  font-size: 26px;
+  font-weight: bold;
+  letter-spacing: 2px;
   border-bottom: 1px solid gold;
 }
+header span {
+  font-size: 30px;
+}
 
+/* البطاقة */
 .card {
   background: rgba(255,215,0,0.08);
   padding: 15px;
   margin: 15px;
-  border-radius: 12px;
+  border-radius: 14px;
 }
 
+/* الصلوات */
 .prayer {
   display: flex;
   justify-content: space-between;
   padding: 6px 0;
 }
 
-.next {
-  background: rgba(255,215,0,0.2);
-  border-radius: 8px;
-  padding: 8px;
+/* منبثق التاريخ */
+.popup {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+
+.popup-content {
+  background: #0b2a4a;
+  border: 2px solid gold;
+  border-radius: 14px;
+  padding: 20px;
+  text-align: center;
+  width: 80%;
+}
+
+.popup-content h3 {
+  margin-top: 0;
 }
 
 button {
@@ -44,7 +69,7 @@ button {
   color: #0b2a4a;
   border: none;
   border-radius: 8px;
-  padding: 8px 12px;
+  padding: 8px 14px;
   margin: 5px;
   font-weight: bold;
 }
@@ -53,10 +78,13 @@ button {
 
 <body>
 
-<header>🕌 موقّتي</header>
+<header>
+  ✨ <span>مواقيتي</span> ✨
+</header>
 
 <div class="card">
-  <h3 id="hijri">📅</h3>
+  <button onclick="showDate()">📅 عرض التاريخ</button>
+
   <div id="prayers"></div>
   <p id="countdown"></p>
 
@@ -64,15 +92,41 @@ button {
   <button onclick="loadPrayers(1)">غدًا</button>
 </div>
 
+<!-- منبثق التاريخ -->
+<div class="popup" id="datePopup">
+  <div class="popup-content">
+    <h3 id="fullDate"></h3>
+    <button onclick="loadPrayers(0)">اليوم</button>
+    <button onclick="loadPrayers(1)">غدًا</button>
+    <br><br>
+    <button onclick="closePopup()">إغلاق</button>
+  </div>
+</div>
+
 <script>
+let currentDateText = "";
+
+function showDate() {
+  document.getElementById("fullDate").innerText = currentDateText;
+  document.getElementById("datePopup").style.display = "flex";
+}
+
+function closePopup() {
+  document.getElementById("datePopup").style.display = "none";
+}
+
 function loadPrayers(day) {
   navigator.geolocation.getCurrentPosition(pos => {
     fetch(`https://api.aladhan.com/v1/timings/${day}?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&method=4`)
       .then(r => r.json())
       .then(d => {
         const t = d.data.timings;
-        document.getElementById("hijri").innerText =
-          "📅 " + d.data.date.hijri.date;
+
+        // اليوم والتاريخ الهجري كامل
+        const hijri = d.data.date.hijri;
+        const gregorianDay = d.data.date.gregorian.weekday.ar;
+        currentDateText =
+          `اليوم ${gregorianDay} ${hijri.day} / ${hijri.month.number} / ${hijri.year} هـ`;
 
         const prayers = [
           ["الفجر", t.Fajr],
