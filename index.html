@@ -1,169 +1,206 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>مواقيتي</title>
+  <meta charset="UTF-8">
+  <title>مواقيتي</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
-body {
-  margin: 0;
-  font-family: Tahoma, Arial, sans-serif;
-  background: #f6edb5;
-  color: #1f2d3d;
-}
+  <style>
+    :root{
+      --bg-dark:#0b1d33;
+      --bg-light:#f6e7b2;
+      --gold:#d4af37;
+      --blue:#0b1d33;
+      --card:#12263f;
+    }
 
-/* شريط علوي */
-header {
-  background: #1f2d3d;
-  color: #f6edb5;
-  text-align: center;
-  padding: 18px;
-  font-size: 22px;
-  font-weight: bold;
-}
+    body{
+      margin:0;
+      font-family: "Tahoma", sans-serif;
+      background: var(--bg-dark);
+      color: var(--gold);
+      transition:0.3s;
+    }
 
-/* محتوى الصفحة */
-main {
-  padding: 20px;
-  padding-bottom: 90px;
-}
+    body.light{
+      background: var(--bg-light);
+      color: var(--blue);
+    }
 
-/* بطاقة كبيرة */
-.card {
-  background: #ffffff;
-  border-radius: 18px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
+    header{
+      text-align:center;
+      padding:20px;
+      font-size:28px;
+      font-weight:bold;
+      letter-spacing:2px;
+      border-bottom:2px solid var(--gold);
+    }
 
-/* اختيار التاريخ */
-.date-btn {
-  width: 100%;
-  padding: 14px;
-  border-radius: 12px;
-  border: none;
-  background: #1f2d3d;
-  color: #fff;
-  font-size: 16px;
-  margin-bottom: 12px;
-}
+    .container{
+      padding:15px;
+    }
 
-/* التاريخ الهجري */
-.hijri {
-  background: #eef1f4;
-  padding: 12px;
-  border-radius: 12px;
-  text-align: center;
-  font-size: 15px;
-  margin-bottom: 15px;
-}
+    .card{
+      background:var(--card);
+      padding:15px;
+      margin-bottom:15px;
+      border-radius:15px;
+    }
 
-/* جدول الصلاة */
-.prayer-title {
-  text-align: center;
-  font-weight: bold;
-  margin-bottom: 10px;
-  font-size: 18px;
-}
+    body.light .card{
+      background:white;
+    }
 
-.prayer-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid #eee;
-  font-size: 16px;
-}
+    .date-box{
+      text-align:center;
+      font-size:18px;
+      margin-bottom:10px;
+    }
 
-.prayer-row:last-child {
-  border-bottom: none;
-}
+    table{
+      width:100%;
+      border-collapse:collapse;
+      text-align:center;
+    }
 
-.note {
-  text-align: center;
-  margin-top: 10px;
-  color: #777;
-  font-size: 14px;
-}
+    th,td{
+      padding:10px;
+      border-bottom:1px solid rgba(255,255,255,0.1);
+    }
 
-/* شريط سفلي */
-.bottom-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 65px;
-  background: #1f2d3d;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+    .next{
+      background:rgba(212,175,55,0.2);
+      font-weight:bold;
+    }
 
-.settings-btn {
-  background: none;
-  border: none;
-  color: #f6edb5;
-  font-size: 24px;
-  cursor: pointer;
-}
-</style>
+    .countdown{
+      text-align:center;
+      margin-top:10px;
+      font-size:18px;
+    }
+
+    .bottom-nav{
+      position:fixed;
+      bottom:0;
+      width:100%;
+      background:#000;
+      display:flex;
+      justify-content:space-around;
+      padding:10px 0;
+    }
+
+    .bottom-nav a{
+      color:var(--gold);
+      text-decoration:none;
+      font-size:18px;
+    }
+
+    body.light .bottom-nav{
+      background:#ddd;
+    }
+  </style>
 </head>
 
 <body>
 
-<header>مواقيتي</header>
+<header>مــواقيــتــي</header>
 
-<main>
+<div class="container">
 
-  <div class="card">
-    <button class="date-btn">اختيار التاريخ</button>
-
-    <div class="hijri">
-      التاريخ الهجري: الاربعاء 26 جمادى الآخرة 1447 هـ
-    </div>
-
-    <div class="prayer-title">مواقيت الصلاة</div>
-
-    <div class="prayer-row">
-      <span>الفجر</span>
-      <span>05:30</span>
-    </div>
-
-    <div class="prayer-row">
-      <span>الظهر</span>
-      <span>12:17</span>
-    </div>
-
-    <div class="prayer-row">
-      <span>العصر</span>
-      <span>15:21</span>
-    </div>
-
-    <div class="prayer-row">
-      <span>المغرب</span>
-      <span>17:42</span>
-    </div>
-
-    <div class="prayer-row">
-      <span>العشاء</span>
-      <span>19:12</span>
-    </div>
-
-    <div class="note">لا توجد صلاة قادمة اليوم</div>
+  <div class="card date-box" id="hijriDate">
+    جاري تحميل التاريخ الهجري...
   </div>
 
-</main>
+  <div class="card">
+    <table id="prayerTable">
+      <tr><th>الصلاة</th><th>الوقت</th></tr>
+    </table>
 
-<!-- شريط الإعدادات السفلي -->
-<div class="bottom-bar">
-  <button class="settings-btn" onclick="openSettings()">⚙️</button>
+    <div class="countdown" id="countdown">
+      ⏳ جاري حساب الصلاة القادمة...
+    </div>
+  </div>
+
+</div>
+
+<div class="bottom-nav">
+  <a href="#">🏠</a>
+  <a href="settings.html">⚙️</a>
 </div>
 
 <script>
-function openSettings() {
-  window.location.href = "settings.html";
+/* ===== التاريخ الهجري التلقائي الصحيح ===== */
+function getHijri(){
+  const today = new Date();
+  const hijri = new Intl.DateTimeFormat('ar-SA-u-ca-islamic',{
+    weekday:'long',
+    day:'numeric',
+    month:'long',
+    year:'numeric'
+  }).format(today);
+
+  document.getElementById("hijriDate").innerText =
+    "اليوم: " + hijri + " هـ";
 }
+
+/* ===== مواقيت الصلاة (مثال مدرسي ثابت) ===== */
+const prayers = [
+  {name:"الفجر", time:"05:20"},
+  {name:"الظهر", time:"12:10"},
+  {name:"العصر", time:"15:30"},
+  {name:"المغرب", time:"17:50"},
+  {name:"العشاء", time:"19:20"}
+];
+
+function loadPrayers(){
+  const table = document.getElementById("prayerTable");
+  const now = new Date();
+  let nextFound = false;
+  let nextTime = null;
+  let nextName = "";
+
+  prayers.forEach(p=>{
+    const tr = document.createElement("tr");
+    const t = new Date();
+    t.setHours(p.time.split(":")[0],p.time.split(":")[1],0);
+
+    if(!nextFound && t > now){
+      tr.classList.add("next");
+      nextFound = true;
+      nextTime = t;
+      nextName = p.name;
+    }
+
+    tr.innerHTML = `<td>${p.name}</td><td>${p.time}</td>`;
+    table.appendChild(tr);
+  });
+
+  if(nextTime){
+    startCountdown(nextTime,nextName);
+  }else{
+    document.getElementById("countdown").innerText =
+      "لا توجد صلاة قادمة اليوم";
+  }
+}
+
+/* ===== العداد التنازلي ===== */
+function startCountdown(time,name){
+  setInterval(()=>{
+    const now = new Date();
+    const diff = time - now;
+    if(diff <= 0) return;
+
+    const h = Math.floor(diff/1000/60/60);
+    const m = Math.floor(diff/1000/60)%60;
+    const s = Math.floor(diff/1000)%60;
+
+    document.getElementById("countdown").innerText =
+      `الصلاة القادمة: ${name} بعد ${h}س ${m}د ${s}ث`;
+  },1000);
+}
+
+getHijri();
+loadPrayers();
 </script>
 
 </body>
