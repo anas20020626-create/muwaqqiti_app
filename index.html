@@ -2,211 +2,151 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>مواقيتي</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>بوصلة القبلة</title>
 
 <style>
 body {
-  margin: 0;
-  font-family: "Tahoma", sans-serif;
-  background: #f6e7b2;
-  color: #0b2a4a;
-}
-
-header {
-  text-align: center;
-  padding: 15px;
-  font-size: 22px;
-  font-weight: bold;
-}
-
-.page {
-  display: none;
-  padding: 15px;
-}
-
-.page.active {
-  display: block;
-}
-
-.card {
-  background: #fff3cc;
-  padding: 15px;
-  border-radius: 12px;
-  margin-bottom: 15px;
-}
-
-select, input {
-  width: 100%;
-  padding: 10px;
-  margin-top: 10px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-}
-
-nav {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
   background: #0b2a4a;
-  display: flex;
-  justify-content: space-around;
-  color: #f6e7b2;
-}
-
-nav button {
-  background: none;
-  border: none;
-  color: inherit;
-  padding: 12px;
-  font-size: 14px;
-}
-
-.qibla {
-  font-size: 60px;
+  color: gold;
+  font-family: system-ui, sans-serif;
   text-align: center;
-  transform: rotate(0deg);
+  margin: 0;
+  padding: 0;
+}
+
+h2 {
+  margin-top: 20px;
+}
+
+.compass-container {
+  margin-top: 30px;
+}
+
+.compass {
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  border: 8px solid gold;
+  margin: auto;
+  position: relative;
+  background: radial-gradient(circle, #123c66 60%, #0b2a4a);
+}
+
+.needle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: bottom center;
+  transform: translate(-50%, -100%) rotate(0deg);
+  font-size: 40px;
+  color: red;
+  transition: transform 0.15s linear;
+}
+
+.kaaba {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 22px;
+}
+
+.status {
+  margin-top: 15px;
+  font-size: 18px;
+}
+button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background: gold;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
 }
 </style>
 </head>
 
 <body>
 
-<header>🕌 مواقيتي</header>
+<h2>🧭 بوصلة القبلة</h2>
 
-<!-- الرئيسية -->
-<div class="page active" id="home">
-  <div class="card">
-    مرحبًا بك في تطبيق مواقيتي  
-    <br>اختر من الأسفل ما تريد 🌙
+<button onclick="startCompass()">تشغيل البوصلة</button>
+
+<div class="compass-container">
+  <div class="compass">
+    <div class="kaaba">🕋</div>
+    <div class="needle" id="needle">▲</div>
   </div>
 </div>
 
-<!-- القرآن -->
-<div class="page" id="quran">
-  <div class="card">
-    <h3>📖 القرآن الكريم</h3>
-    <select id="surahSelect"></select>
-    <div id="ayahs"></div>
-  </div>
-</div>
-
-<!-- الأذكار -->
-<div class="page" id="azkar">
-  <div class="card">
-    <h3>📿 الأذكار</h3>
-    <select id="zikrType">
-      <option value="morning">أذكار الصباح</option>
-      <option value="evening">أذكار المساء</option>
-      <option value="prayer">أذكار بعد الصلاة</option>
-    </select>
-    <div id="zikrText"></div>
-  </div>
-</div>
-
-<!-- القبلة -->
-<div class="page" id="qibla">
-  <div class="card">
-    <h3>🧭 القبلة</h3>
-    <div class="qibla" id="arrow">⬆️</div>
-    <p style="text-align:center;">اتجه بالسهم نحو القبلة</p>
-  </div>
-</div>
-
-<!-- الإعدادات -->
-<div class="page" id="settings">
-  <div class="card">
-    <h3>⚙️ الإعدادات</h3>
-    <input id="cityInput" placeholder="اكتب اسم المدينة">
-    <button onclick="saveCity()">حفظ المدينة</button>
-    <p id="savedCity"></p>
-  </div>
-</div>
-
-<!-- التنقل -->
-<nav>
-  <button onclick="showPage('home')">الرئيسية</button>
-  <button onclick="showPage('quran')">القرآن</button>
-  <button onclick="showPage('azkar')">الأذكار</button>
-  <button onclick="showPage('qibla')">القبلة</button>
-  <button onclick="showPage('settings')">الإعدادات</button>
-</nav>
+<p class="status" id="status">اضغط تشغيل ووجّه الهاتف</p>
 
 <script>
-// التنقل
-function showPage(id) {
-  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
+const KAABA_LAT = 21.4225;
+const KAABA_LNG = 39.8262;
+let qiblaDirection = null;
+let vibrated = false;
+
+// حساب اتجاه القبلة
+function getQiblaDirection(lat, lng) {
+  const φ1 = lat * Math.PI / 180;
+  const φ2 = KAABA_LAT * Math.PI / 180;
+  const Δλ = (KAABA_LNG - lng) * Math.PI / 180;
+
+  const y = Math.sin(Δλ);
+  const x = Math.cos(φ1) * Math.tan(φ2) - Math.sin(φ1) * Math.cos(Δλ);
+  let θ = Math.atan2(y, x) * 180 / Math.PI;
+  return (θ + 360) % 360;
 }
 
-// القرآن (نموذج)
-const quran = [
-  {
-    name: "الفاتحة",
-    ayahs: [
-      "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
-      "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
-      "الرَّحْمَٰنِ الرَّحِيمِ",
-      "مَالِكِ يَوْمِ الدِّينِ",
-      "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
-      "اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ",
-      "صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ"
-    ]
-  },
-  {
-    name: "الإخلاص",
-    ayahs: [
-      "قُلْ هُوَ اللَّهُ أَحَدٌ",
-      "اللَّهُ الصَّمَدُ",
-      "لَمْ يَلِدْ وَلَمْ يُولَدْ",
-      "وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ"
-    ]
+function startCompass() {
+  if (typeof DeviceOrientationEvent !== "undefined" &&
+      typeof DeviceOrientationEvent.requestPermission === "function") {
+    DeviceOrientationEvent.requestPermission().then(response => {
+      if (response === "granted") initCompass();
+    });
+  } else {
+    initCompass();
   }
-];
-
-const surahSelect = document.getElementById("surahSelect");
-quran.forEach((s, i) => {
-  const o = document.createElement("option");
-  o.value = i;
-  o.textContent = s.name;
-  surahSelect.appendChild(o);
-});
-
-surahSelect.onchange = () => {
-  const box = document.getElementById("ayahs");
-  box.innerHTML = "";
-  quran[surahSelect.value].ayahs.forEach((a, i) => {
-    box.innerHTML += `<p>﴿${a}﴾ (${i+1})</p>`;
-  });
-};
-surahSelect.onchange();
-
-// الأذكار
-const azkar = {
-  morning: "أصبحنا وأصبح الملك لله...",
-  evening: "أمسينا وأمسى الملك لله...",
-  prayer: "أستغفر الله (3) اللهم أنت السلام..."
-};
-
-document.getElementById("zikrType").onchange = e => {
-  document.getElementById("zikrText").innerText = azkar[e.target.value];
-};
-document.getElementById("zikrText").innerText = azkar.morning;
-
-// القبلة (سهم تجريبي)
-window.addEventListener("deviceorientation", e => {
-  document.getElementById("arrow").style.transform =
-    `rotate(${360 - e.alpha}deg)`;
-});
-
-// الإعدادات
-function saveCity() {
-  const city = document.getElementById("cityInput").value;
-  localStorage.setItem("city", city);
-  document.getElementById("savedCity").innerText = "📍 المدينة: " + city;
 }
 
-const saved = localStorage.getItem("city");
-if (saved) document.getElementById("savedCity").innerText = "📍 المدينة: " + saved;
+function initCompass() {
+  navigator.geolocation.getCurrentPosition(pos => {
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+    qiblaDirection = getQiblaDirection(lat, lng);
+
+    window.addEventListener("deviceorientationabsolute", handleOrientation, true);
+    window.addEventListener("deviceorientation", handleOrientation, true);
+  }, () => {
+    document.getElementById("status").innerText = "❌ لم يتم السماح بالموقع";
+  });
+}
+
+function handleOrientation(e) {
+  if (!e.alpha || qiblaDirection === null) return;
+
+  const heading = 360 - e.alpha;
+  const diff = (qiblaDirection - heading + 360) % 360;
+
+  document.getElementById("needle").style.transform =
+    `translate(-50%, -100%) rotate(${diff}deg)`;
+
+  const angle = Math.abs(diff > 180 ? diff - 360 : diff);
+
+  if (angle < 5) {
+    document.getElementById("status").innerText = "✅ هذه القبلة";
+    if (!vibrated) {
+      navigator.vibrate(300);
+      vibrated = true;
+    }
+  } else {
+    document.getElementById("status").innerText =
+      "📐 انحراف: " + angle.toFixed(1) + "°";
+    vibrated = false;
+  }
+}
 </script>
 
 </body>
