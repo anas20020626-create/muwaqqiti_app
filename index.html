@@ -2,235 +2,169 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>مواقيتي</title>
 
 <style>
-  .bottom-nav {
-    position: fixed;
-    bottom: 0;
-    right: 0;
-    left: 0;
-    height: 60px;
-    background: #1f2d3d;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-top: 2px solid #d4af37;
+body {
+  margin: 0;
+  font-family: Tahoma, Arial, sans-serif;
+  background: #f6edb5;
+  color: #1f2d3d;
 }
 
-.nav-item {
-    color: #d4af37;
-    text-decoration: none;
-    font-size: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+/* شريط علوي */
+header {
+  background: #1f2d3d;
+  color: #f6edb5;
+  text-align: center;
+  padding: 18px;
+  font-size: 22px;
+  font-weight: bold;
 }
 
-.nav-item span {
-    font-size: 12px;
-    margin-top: 2px;
+/* محتوى الصفحة */
+main {
+  padding: 20px;
+  padding-bottom: 90px;
 }
-    body {
-        margin: 0;
-        font-family: "Tahoma", Arial, sans-serif;
-        background: #f6e8b1;
-        color: #1f2d3d;
-    }
 
-    header {
-        background: #1f2d3d;
-        color: #d4af37;
-        text-align: center;
-        padding: 20px;
-        font-size: 32px;
-        font-weight: bold;
-        letter-spacing: 3px;
-    }
+/* بطاقة كبيرة */
+.card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
 
-    .container {
-        padding: 20px;
-        max-width: 500px;
-        margin: auto;
-    }
+/* اختيار التاريخ */
+.date-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: #1f2d3d;
+  color: #fff;
+  font-size: 16px;
+  margin-bottom: 12px;
+}
 
-    .card {
-        background: #ffffff;
-        border-radius: 16px;
-        padding: 15px;
-        margin-bottom: 15px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
+/* التاريخ الهجري */
+.hijri {
+  background: #eef1f4;
+  padding: 12px;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 15px;
+  margin-bottom: 15px;
+}
 
-    .btn {
-        width: 100%;
-        padding: 12px;
-        background: #1f2d3d;
-        color: #fff;
-        border: none;
-        border-radius: 12px;
-        font-size: 16px;
-        cursor: pointer;
-    }
+/* جدول الصلاة */
+.prayer-title {
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 10px;
+  font-size: 18px;
+}
 
-    .btn:hover {
-        background: #16202b;
-    }
+.prayer-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 16px;
+}
 
-    .date-box {
-        text-align: center;
-        font-size: 18px;
-        font-weight: bold;
-    }
+.prayer-row:last-child {
+  border-bottom: none;
+}
 
-    .prayer {
-        display: flex;
-        justify-content: space-between;
-        padding: 10px;
-        border-bottom: 1px solid #eee;
-        font-size: 18px;
-    }
+.note {
+  text-align: center;
+  margin-top: 10px;
+  color: #777;
+  font-size: 14px;
+}
 
-    .next {
-        background: #fff2cc;
-        border-radius: 8px;
-        font-weight: bold;
-    }
+/* شريط سفلي */
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 65px;
+  background: #1f2d3d;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-    footer {
-        text-align: center;
-        font-size: 14px;
-        color: #555;
-        margin-top: 20px;
-    }
+.settings-btn {
+  background: none;
+  border: none;
+  color: #f6edb5;
+  font-size: 24px;
+  cursor: pointer;
+}
 </style>
 </head>
 
 <body>
 
-<header>
-    مواقيتي
-</header>
+<header>مواقيتي</header>
 
-<div class="container">
+<main>
 
-    <!-- اختيار التاريخ -->
-    <div class="card">
-        <button class="btn" onclick="pickDate()">اختيار التاريخ</button>
+  <div class="card">
+    <button class="date-btn">اختيار التاريخ</button>
+
+    <div class="hijri">
+      التاريخ الهجري: الاربعاء 26 جمادى الآخرة 1447 هـ
     </div>
 
-    <!-- التاريخ الهجري -->
-    <div class="card">
-        <div class="date-box" id="hijriDate">
-            جاري تحميل التاريخ الهجري...
-        </div>
+    <div class="prayer-title">مواقيت الصلاة</div>
+
+    <div class="prayer-row">
+      <span>الفجر</span>
+      <span>05:30</span>
     </div>
 
-    <!-- مواقيت الصلاة -->
-    <div class="card">
-        <h3 style="text-align:center;">مواقيت الصلاة</h3>
-        <div id="prayers"></div>
+    <div class="prayer-row">
+      <span>الظهر</span>
+      <span>12:17</span>
     </div>
 
-    <!-- الإعدادات -->
-    <div class="card">
-        <h3>الإعدادات</h3>
-        <p>اسم التطبيق: مواقيتي</p>
-        <p>المطورون:</p>
-        <ul>
-            <li>أنس الشهراني</li>
-            <li>مسفر الشهراني</li>
-            <li>سعيد الأحمري</li>
-        </ul>
+    <div class="prayer-row">
+      <span>العصر</span>
+      <span>15:21</span>
     </div>
 
+    <div class="prayer-row">
+      <span>المغرب</span>
+      <span>17:42</span>
+    </div>
+
+    <div class="prayer-row">
+      <span>العشاء</span>
+      <span>19:12</span>
+    </div>
+
+    <div class="note">لا توجد صلاة قادمة اليوم</div>
+  </div>
+
+</main>
+
+<!-- شريط الإعدادات السفلي -->
+<div class="bottom-bar">
+  <button class="settings-btn" onclick="openSettings()">⚙️</button>
 </div>
-
-<footer>
-    مشروع مدرسي – تطبيق مواقيتي
-</footer>
 
 <script>
-/* ===== التاريخ ===== */
-let selectedDate = new Date();
-
-function updateHijri(date) {
-    const formatter = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
-    document.getElementById("hijriDate").innerText =
-        "التاريخ الهجري: " + formatter.format(date);
+function openSettings() {
+  window.location.href = "settings.html";
 }
-
-function pickDate() {
-    let input = prompt("أدخل التاريخ الميلادي (YYYY-MM-DD):");
-    if (!input) return;
-    let newDate = new Date(input);
-    if (isNaN(newDate)) {
-        alert("تاريخ غير صحيح");
-        return;
-    }
-    selectedDate = newDate;
-    updateHijri(selectedDate);
-    loadPrayers();
-}
-
-/* ===== مواقيت الصلاة (ثابتة نموذجية للتسليم المدرسي) ===== */
-const prayerTimes = [
-    {name: "الفجر", time: "05:30"},
-    {name: "الظهر", time: "12:17"},
-    {name: "العصر", time: "15:21"},
-    {name: "المغرب", time: "17:42"},
-    {name: "العشاء", time: "19:12"}
-];
-
-function loadPrayers() {
-    const container = document.getElementById("prayers");
-    container.innerHTML = "";
-
-    const now = new Date();
-    let nextFound = false;
-
-    prayerTimes.forEach(p => {
-        const div = document.createElement("div");
-        div.className = "prayer";
-
-        const prayerTime = new Date(selectedDate);
-        const parts = p.time.split(":");
-        prayerTime.setHours(parts[0], parts[1], 0);
-
-        if (!nextFound && prayerTime > now) {
-            div.classList.add("next");
-            nextFound = true;
-        }
-
-        div.innerHTML = `<span>${p.name}</span><span>${p.time}</span>`;
-        container.appendChild(div);
-    });
-
-    if (!nextFound) {
-        const note = document.createElement("div");
-        note.style.textAlign = "center";
-        note.style.marginTop = "10px";
-        note.innerText = "لا توجد صلاة قادمة اليوم";
-        container.appendChild(note);
-    }
-}
-
-/* ===== تشغيل أولي ===== */
-updateHijri(selectedDate);
-loadPrayers();
 </script>
-  
-<!-- شريط التنقل السفلي -->
-<div class="bottom-nav">
-    <a href="settings.html" class="nav-item">
-        ⚙️
-        <span>الإعدادات</span>
-    </a>
-</div>
+
 </body>
 </html>
