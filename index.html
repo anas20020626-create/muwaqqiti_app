@@ -2,206 +2,166 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>مواقيتي</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <title>مواقيتي</title>
   <style>
-    :root{
-      --bg-dark:#0b1d33;
-      --bg-light:#f6e7b2;
-      --gold:#d4af37;
-      --blue:#0b1d33;
-      --card:#12263f;
+    body {
+      font-family: "Tajawal", sans-serif;
+      background: linear-gradient(to bottom, #001f3f, #002b5c);
+      color: gold;
+      text-align: center;
+      padding: 20px;
+      margin: 0;
     }
 
-    body{
-      margin:0;
-      font-family: "Tahoma", sans-serif;
-      background: var(--bg-dark);
-      color: var(--gold);
-      transition:0.3s;
+    h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+      font-weight: bold;
+      text-shadow: 0 0 10px gold;
     }
 
-    body.light{
-      background: var(--bg-light);
-      color: var(--blue);
+    .city-name {
+      font-size: 22px;
+      color: #ffd700;
+      margin-bottom: 15px;
     }
 
-    header{
-      text-align:center;
-      padding:20px;
-      font-size:28px;
-      font-weight:bold;
-      letter-spacing:2px;
-      border-bottom:2px solid var(--gold);
+    .date {
+      font-size: 18px;
+      color: #ffdd99;
+      margin-bottom: 20px;
     }
 
-    .container{
-      padding:15px;
+    .prayer {
+      background: rgba(255, 215, 0, 0.1);
+      border: 1px solid gold;
+      border-radius: 15px;
+      padding: 15px;
+      margin: 10px auto;
+      max-width: 300px;
+      transition: transform 0.3s, background 0.3s;
     }
 
-    .card{
-      background:var(--card);
-      padding:15px;
-      margin-bottom:15px;
-      border-radius:15px;
+    .prayer.upcoming {
+      background: gold;
+      color: #001f3f;
+      font-weight: bold;
+      transform: scale(1.05);
     }
 
-    body.light .card{
-      background:white;
+    .footer {
+      position: fixed;
+      bottom: 10px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
     }
 
-    .date-box{
-      text-align:center;
-      font-size:18px;
-      margin-bottom:10px;
+    .footer a {
+      background: gold;
+      color: #001f3f;
+      padding: 10px 20px;
+      border-radius: 20px;
+      text-decoration: none;
+      font-weight: bold;
     }
 
-    table{
-      width:100%;
-      border-collapse:collapse;
-      text-align:center;
-    }
-
-    th,td{
-      padding:10px;
-      border-bottom:1px solid rgba(255,255,255,0.1);
-    }
-
-    .next{
-      background:rgba(212,175,55,0.2);
-      font-weight:bold;
-    }
-
-    .countdown{
-      text-align:center;
-      margin-top:10px;
-      font-size:18px;
-    }
-
-    .bottom-nav{
-      position:fixed;
-      bottom:0;
-      width:100%;
-      background:#000;
-      display:flex;
-      justify-content:space-around;
-      padding:10px 0;
-    }
-
-    .bottom-nav a{
-      color:var(--gold);
-      text-decoration:none;
-      font-size:18px;
-    }
-
-    body.light .bottom-nav{
-      background:#ddd;
+    .footer a:hover {
+      background: #ffea80;
     }
   </style>
 </head>
-
 <body>
+  <h1>⚜️ مواقيتي ⚜️</h1>
+  <div class="city-name" id="city">جارٍ تحديد موقعك...</div>
+  <div class="date" id="date"></div>
+  <div id="prayer-times"></div>
 
-<header>مــواقيــتــي</header>
-
-<div class="container">
-
-  <div class="card date-box" id="hijriDate">
-    جاري تحميل التاريخ الهجري...
+  <div class="footer">
+    <a href="index.html">الرئيسية</a>
+    <a href="quran.html">القرآن</a>
+    <a href="azkar.html">الأذكار</a>
+    <a href="settings.html">الإعدادات</a>
   </div>
 
-  <div class="card">
-    <table id="prayerTable">
-      <tr><th>الصلاة</th><th>الوقت</th></tr>
-    </table>
-
-    <div class="countdown" id="countdown">
-      ⏳ جاري حساب الصلاة القادمة...
-    </div>
-  </div>
-
-</div>
-
-<div class="bottom-nav">
-  <a href="#">🏠</a>
-  <a href="settings.html">⚙️</a>
-</div>
-
-<script>
-/* ===== التاريخ الهجري التلقائي الصحيح ===== */
-function getHijri(){
-  const today = new Date();
-  const hijri = new Intl.DateTimeFormat('ar-SA-u-ca-islamic',{
-    weekday:'long',
-    day:'numeric',
-    month:'long',
-    year:'numeric'
-  }).format(today);
-
-  document.getElementById("hijriDate").innerText =
-    "اليوم: " + hijri + " هـ";
-}
-
-/* ===== مواقيت الصلاة (مثال مدرسي ثابت) ===== */
-const prayers = [
-  {name:"الفجر", time:"05:20"},
-  {name:"الظهر", time:"12:10"},
-  {name:"العصر", time:"15:30"},
-  {name:"المغرب", time:"17:50"},
-  {name:"العشاء", time:"19:20"}
-];
-
-function loadPrayers(){
-  const table = document.getElementById("prayerTable");
-  const now = new Date();
-  let nextFound = false;
-  let nextTime = null;
-  let nextName = "";
-
-  prayers.forEach(p=>{
-    const tr = document.createElement("tr");
-    const t = new Date();
-    t.setHours(p.time.split(":")[0],p.time.split(":")[1],0);
-
-    if(!nextFound && t > now){
-      tr.classList.add("next");
-      nextFound = true;
-      nextTime = t;
-      nextName = p.name;
+  <script>
+    // التاريخ الهجري والميلادي
+    function updateDate() {
+      const today = new Date();
+      const hijriFormatter = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+      const hijriDate = hijriFormatter.format(today);
+      document.getElementById('date').textContent =
+        `📅 ${today.toLocaleDateString('ar-SA')} هـ (${hijriDate})`;
     }
 
-    tr.innerHTML = `<td>${p.name}</td><td>${p.time}</td>`;
-    table.appendChild(tr);
-  });
+    updateDate();
 
-  if(nextTime){
-    startCountdown(nextTime,nextName);
-  }else{
-    document.getElementById("countdown").innerText =
-      "لا توجد صلاة قادمة اليوم";
-  }
-}
+    // الحصول على الموقع الجغرافي
+    async function getPrayerTimes(lat, lon, city) {
+      try {
+        const response = await fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=2`);
+        const data = await response.json();
+        const times = data.data.timings;
+        const prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+        const names = ['الفجر', 'الظهر', 'العصر', 'المغرب', 'العشاء'];
+        const now = new Date();
+        let upcomingIndex = -1;
 
-/* ===== العداد التنازلي ===== */
-function startCountdown(time,name){
-  setInterval(()=>{
-    const now = new Date();
-    const diff = time - now;
-    if(diff <= 0) return;
+        const container = document.getElementById('prayer-times');
+        container.innerHTML = '';
+        document.getElementById('city').textContent = `📍 ${city}`;
 
-    const h = Math.floor(diff/1000/60/60);
-    const m = Math.floor(diff/1000/60)%60;
-    const s = Math.floor(diff/1000)%60;
+        prayers.forEach((prayer, i) => {
+          const time = times[prayer];
+          const [hour, minute] = time.split(':').map(Number);
+          const prayerTime = new Date(now);
+          prayerTime.setHours(hour, minute, 0, 0);
 
-    document.getElementById("countdown").innerText =
-      `الصلاة القادمة: ${name} بعد ${h}س ${m}د ${s}ث`;
-  },1000);
-}
+          if (upcomingIndex === -1 && prayerTime > now) {
+            upcomingIndex = i;
+          }
 
-getHijri();
-loadPrayers();
-</script>
+          const div = document.createElement('div');
+          div.className = 'prayer' + (i === upcomingIndex ? ' upcoming' : '');
+          div.textContent = `${names[i]}: ${time}`;
+          container.appendChild(div);
+        });
+      } catch (e) {
+        document.getElementById('prayer-times').textContent = 'حدث خطأ أثناء تحميل المواقيت.';
+      }
+    }
 
+    function detectLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async position => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+          const data = await response.json();
+          const city = data.address.city || data.address.town || data.address.village || "مدينتك";
+          getPrayerTimes(lat, lon, city);
+        }, () => {
+          document.getElementById('city').textContent = 'لم يتم السماح بالموقع.';
+        });
+      } else {
+        document.getElementById('city').textContent = 'الموقع غير مدعوم.';
+      }
+    }
+
+    detectLocation();
+
+    // تحديث تلقائي كل 5 دقائق
+    setInterval(() => {
+      updateDate();
+      detectLocation();
+    }, 300000);
+  </script>
 </body>
 </html>
