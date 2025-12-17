@@ -1,40 +1,119 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>مواقيتي</title>
+  <meta charset="UTF-8">
+  <title>مواقيتي</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="stylesheet" href="css/style.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: Tahoma, Arial;
+      background: #f6e7b2;
+      color: #1f2d3d;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1f2d3d, #3b4b63);
+      color: gold;
+      text-align: center;
+      padding: 20px;
+      font-size: 28px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      box-shadow: 0 4px 15px rgba(0,0,0,.3);
+    }
+
+    .container {
+      padding: 15px;
+    }
+
+    .hijri-box {
+      background: linear-gradient(135deg, #f9e9b8, #e6c97a);
+      color: #2b2b2b;
+      padding: 18px;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.18);
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .hijri-box div {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
+    .hijri-actions button {
+      margin: 6px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 12px;
+      background: #1f2d3d;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .hijri-actions button:hover {
+      background: #32435f;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,.12);
+      text-align: center;
+      font-size: 18px;
+    }
+  </style>
 </head>
 
 <body>
 
-<header class="app-header">
-  ✨ مواقيتي ✨
-</header>
+  <!-- اسم التطبيق -->
+  <header>
+    ✨ مواقيتي ✨
+  </header>
 
-<main id="content">
-  <div class="card">
-    <h3 id="hijriDate">جاري تحميل التاريخ...</h3>
+  <div class="container">
 
-    <input type="date" id="datePicker">
+    <!-- التاريخ الهجري -->
+    <div class="hijri-box">
+      <div id="hijriText">جاري تحميل التاريخ...</div>
+      <div class="hijri-actions">
+        <button onclick="setHijri(0)">اليوم</button>
+        <button onclick="setHijri(1)">غدًا</button>
+      </div>
+    </div>
 
-    <div id="prayerTimes">جاري تحميل مواقيت الصلاة...</div>
+    <!-- مكان مؤقت لباقي الميزات -->
+    <div class="card">🕋 القبلة (قريبًا)</div>
+    <div class="card">⏰ مواقيت الصلاة (قريبًا)</div>
+    <div class="card">📿 الأذكار (قريبًا)</div>
+    <div class="card">📖 القرآن الكريم (قريبًا)</div>
 
-    <div id="nextPrayer" class="highlight"></div>
-    <div id="countdown"></div>
   </div>
-</main>
 
-<nav class="bottom-nav">
-  <a href="index.html">🏠</a>
-  <a href="qibla.html">🧭</a>
-  <a href="quran.html">📖</a>
-  <a href="azkar.html">📿</a>
-  <a href="settings.html">⚙️</a>
-</nav>
+  <script>
+    function setHijri(addDays = 0) {
+      const date = new Date();
+      date.setDate(date.getDate() + addDays);
 
-<script src="js/main.js"></script>
+      const formatter = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'numeric',
+        year: 'numeric'
+      });
+
+      document.getElementById("hijriText").innerText = formatter.format(date);
+    }
+
+    // تشغيل تلقائي
+    setHijri(0);
+  </script>
+
 </body>
 </html>
