@@ -20,14 +20,8 @@ header {
   border-bottom: 1px solid gold;
 }
 
-.page {
-  display: none;
-  padding: 15px;
-}
-
-.page.active {
-  display: block;
-}
+.page { display: none; padding: 15px; }
+.page.active { display: block; }
 
 nav {
   position: fixed;
@@ -35,7 +29,6 @@ nav {
   width: 100%;
   background: #081f36;
   display: flex;
-  justify-content: space-around;
   border-top: 1px solid gold;
 }
 
@@ -45,22 +38,24 @@ nav button {
   border: none;
   color: gold;
   padding: 10px;
-  font-size: 14px;
+  font-size: 13px;
 }
 
-h2 {
-  text-align: center;
+.card {
+  background: rgba(255,215,0,0.08);
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
 }
 
 /* القبلة */
 .compass {
-  width: 240px;
-  height: 240px;
+  width: 230px;
+  height: 230px;
   border-radius: 50%;
   border: 6px solid gold;
   margin: 20px auto;
   position: relative;
-  background: radial-gradient(circle, #123c66, #0b2a4a);
 }
 
 .needle {
@@ -68,7 +63,7 @@ h2 {
   top: 50%;
   left: 50%;
   transform-origin: bottom center;
-  transform: translate(-50%, -100%) rotate(0deg);
+  transform: translate(-50%, -100%);
   font-size: 40px;
   color: red;
 }
@@ -79,19 +74,6 @@ h2 {
   left: 50%;
   transform: translateX(-50%);
 }
-
-/* أذكار */
-.zikr {
-  background: rgba(255,215,0,0.08);
-  padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 8px;
-}
-
-/* إعدادات */
-.setting {
-  margin: 15px 0;
-}
 </style>
 </head>
 
@@ -99,121 +81,122 @@ h2 {
 
 <header>📿 موقّتي</header>
 
-<!-- الصفحة الرئيسية -->
+<!-- الرئيسية -->
 <div id="home" class="page active">
-  <h2>🕌 مرحبًا بك</h2>
-  <p style="text-align:center">
-    تطبيق موقّتي – قيد التطوير  
-    <br>أوقات الصلاة ستُضاف لاحقًا
-  </p>
+  <h3 id="hijriDate"></h3>
+
+  <div class="card" id="prayers"></div>
+
+  <button onclick="loadPrayers(0)">اليوم</button>
+  <button onclick="loadPrayers(1)">غدًا</button>
 </div>
 
 <!-- القبلة -->
 <div id="qibla" class="page">
-  <h2>🧭 القبلة</h2>
-  <button onclick="startCompass()">تشغيل البوصلة</button>
+  <h3>🧭 القبلة</h3>
+  <button onclick="startCompass()">تشغيل</button>
 
   <div class="compass">
     <div class="kaaba">🕋</div>
     <div class="needle" id="needle">▲</div>
   </div>
 
-  <p id="qiblaStatus" style="text-align:center">وجّه الهاتف</p>
+  <p id="qiblaStatus"></p>
+</div>
+
+<!-- القرآن -->
+<div id="quran" class="page">
+  <h3>📖 القرآن الكريم</h3>
+  <select id="surahSelect"></select>
+  <div id="ayahs"></div>
 </div>
 
 <!-- الأذكار -->
 <div id="azkar" class="page">
-  <h2>📿 الأذكار</h2>
-
-  <h3>أذكار الصباح</h3>
-  <div class="zikr">أصبحنا وأصبح الملك لله</div>
-  <div class="zikr">اللهم بك أصبحنا وبك أمسينا</div>
-  <div class="zikr">سبحان الله وبحمده (100 مرة)</div>
-  <div class="zikr">لا إله إلا الله وحده لا شريك له</div>
-  <div class="zikr">رضيت بالله ربًا وبالإسلام دينًا</div>
-  <div class="zikr">اللهم عافني في بدني</div>
-  <div class="zikr">أعوذ بكلمات الله التامات</div>
-  <div class="zikr">اللهم إني أسألك خير هذا اليوم</div>
-  <div class="zikr">حسبي الله لا إله إلا هو</div>
-  <div class="zikr">اللهم صل وسلم على نبينا محمد</div>
-
-  <h3>أذكار المساء</h3>
-  <div class="zikr">أمسينا وأمسى الملك لله</div>
-  <div class="zikr">اللهم بك أمسينا وبك أصبحنا</div>
-  <div class="zikr">أعوذ بك من شر ما خلق</div>
-  <div class="zikr">سبحان الله وبحمده</div>
-  <div class="zikr">اللهم إني أعوذ بك من الهم والحزن</div>
+  <h3>📿 أذكار</h3>
+  <div class="card">سبحان الله</div>
+  <div class="card">الحمد لله</div>
+  <div class="card">لا إله إلا الله</div>
+  <div class="card">الله أكبر</div>
+  <div class="card">اللهم صل على محمد</div>
 </div>
 
 <!-- الإعدادات -->
 <div id="settings" class="page">
-  <h2>⚙️ الإعدادات</h2>
-
-  <div class="setting">
-    <label>
-      <input type="checkbox" id="vibrationToggle" checked>
-      تفعيل الاهتزاز عند القبلة
-    </label>
-  </div>
+  <label>
+    <input type="checkbox" id="vibration" checked>
+    تفعيل الاهتزاز
+  </label>
 </div>
 
-<!-- التنقل -->
 <nav>
-  <button onclick="showPage('home')">🏠 الرئيسية</button>
-  <button onclick="showPage('qibla')">🧭 القبلة</button>
-  <button onclick="showPage('azkar')">📿 الأذكار</button>
-  <button onclick="showPage('settings')">⚙️ الإعدادات</button>
+  <button onclick="showPage('home')">🏠</button>
+  <button onclick="showPage('qibla')">🧭</button>
+  <button onclick="showPage('quran')">📖</button>
+  <button onclick="showPage('azkar')">📿</button>
+  <button onclick="showPage('settings')">⚙️</button>
 </nav>
 
 <script>
 function showPage(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
-/* القبلة */
-const KAABA_LAT = 21.4225;
-const KAABA_LNG = 39.8262;
-let qiblaDir = null;
-let vibrated = false;
-
-function getQibla(lat, lng) {
-  const dLng = (KAABA_LNG - lng) * Math.PI / 180;
-  const y = Math.sin(dLng);
-  const x = Math.cos(lat * Math.PI / 180) * Math.tan(KAABA_LAT * Math.PI / 180)
-            - Math.sin(lat * Math.PI / 180) * Math.cos(dLng);
-  return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
-}
-
-function startCompass() {
-  navigator.geolocation.getCurrentPosition(pos => {
-    qiblaDir = getQibla(pos.coords.latitude, pos.coords.longitude);
-
-    window.addEventListener("deviceorientation", e => {
-      if (!e.alpha) return;
-
-      const heading = 360 - e.alpha;
-      const diff = (qiblaDir - heading + 360) % 360;
-
-      document.getElementById("needle").style.transform =
-        `translate(-50%, -100%) rotate(${diff}deg)`;
-
-      const angle = Math.abs(diff > 180 ? diff - 360 : diff);
-      const vibOn = document.getElementById("vibrationToggle").checked;
-
-      if (angle < 5) {
-        document.getElementById("qiblaStatus").innerText = "✅ هذه القبلة";
-        if (vibOn && !vibrated) {
-          navigator.vibrate(300);
-          vibrated = true;
-        }
-      } else {
-        document.getElementById("qiblaStatus").innerText =
-          "انحراف: " + angle.toFixed(1) + "°";
-        vibrated = false;
-      }
+/* أوقات الصلاة + هجري */
+function loadPrayers(day) {
+  navigator.geolocation.getCurrentPosition(pos=>{
+    fetch(`https://api.aladhan.com/v1/timings/${day}?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&method=4`)
+    .then(r=>r.json())
+    .then(d=>{
+      document.getElementById("hijriDate").innerText =
+        "📅 " + d.data.date.hijri.date;
+      const t=d.data.timings;
+      document.getElementById("prayers").innerHTML =
+        `الفجر: ${t.Fajr}<br>الظهر: ${t.Dhuhr}<br>العصر: ${t.Asr}<br>المغرب: ${t.Maghrib}<br>العشاء: ${t.Isha}`;
     });
   });
+}
+loadPrayers(0);
+
+/* القرآن API */
+fetch("https://api.alquran.cloud/v1/surah")
+.then(r=>r.json())
+.then(d=>{
+  d.data.forEach(s=>{
+    const o=document.createElement("option");
+    o.value=s.number;
+    o.textContent=s.number+" - "+s.name;
+    surahSelect.appendChild(o);
+  });
+});
+
+surahSelect.onchange=()=>{
+  fetch(`https://api.alquran.cloud/v1/surah/${surahSelect.value}`)
+  .then(r=>r.json())
+  .then(d=>{
+    ayahs.innerHTML="";
+    d.data.ayahs.forEach(a=>{
+      ayahs.innerHTML+=`<p>${a.text} (${a.numberInSurah})</p>`;
+    });
+  });
+};
+
+/* القبلة */
+const K_LAT=21.4225, K_LNG=39.8262;
+function startCompass(){
+navigator.geolocation.getCurrentPosition(p=>{
+const lat=p.coords.latitude,lng=p.coords.longitude;
+const q=Math.atan2(
+Math.sin((K_LNG-lng)*Math.PI/180),
+Math.cos(lat*Math.PI/180)*Math.tan(K_LAT*Math.PI/180)-Math.sin(lat*Math.PI/180)*Math.cos((K_LNG-lng)*Math.PI/180)
+)*180/Math.PI;
+window.ondeviceorientation=e=>{
+const d=(q-(360-e.alpha)+360)%360;
+needle.style.transform=`translate(-50%,-100%) rotate(${d}deg)`;
+if(Math.abs(d)<5&&vibration.checked)navigator.vibrate(200);
+};
+});
 }
 </script>
 
