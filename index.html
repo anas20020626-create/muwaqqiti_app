@@ -1,119 +1,200 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>مواقيتي</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>مواقيتي</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Tahoma, Arial;
-      background: #f6e7b2;
-      color: #1f2d3d;
-    }
+<style>
+body{
+  margin:0;
+  font-family:Tahoma,Arial;
+  background:#f6e7b2;
+  color:#1f2d3d;
+}
+header{
+  background:#1f2d3d;
+  color:gold;
+  text-align:center;
+  padding:18px;
+  font-size:28px;
+  font-weight:bold;
+}
+.container{padding:15px}
+button{
+  padding:10px 18px;
+  border:none;
+  border-radius:12px;
+  background:#1f2d3d;
+  color:white;
+  font-size:16px;
+  cursor:pointer;
+}
+.card{
+  background:white;
+  border-radius:14px;
+  padding:15px;
+  margin-top:15px;
+  box-shadow:0 4px 10px rgba(0,0,0,.15);
+}
+.prayer{
+  display:flex;
+  justify-content:space-between;
+  padding:10px;
+  border-radius:10px;
+  margin:6px 0;
+}
+.next{
+  background:gold;
+  font-weight:bold;
+}
+#countdown{
+  text-align:center;
+  font-size:18px;
+  margin-top:10px;
+  color:#1f2d3d;
+}
 
-    header {
-      background: linear-gradient(135deg, #1f2d3d, #3b4b63);
-      color: gold;
-      text-align: center;
-      padding: 20px;
-      font-size: 28px;
-      font-weight: bold;
-      letter-spacing: 2px;
-      box-shadow: 0 4px 15px rgba(0,0,0,.3);
-    }
-
-    .container {
-      padding: 15px;
-    }
-
-    .hijri-box {
-      background: linear-gradient(135deg, #f9e9b8, #e6c97a);
-      color: #2b2b2b;
-      padding: 18px;
-      border-radius: 16px;
-      box-shadow: 0 6px 20px rgba(0,0,0,.18);
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .hijri-box div {
-      font-size: 20px;
-      margin-bottom: 10px;
-    }
-
-    .hijri-actions button {
-      margin: 6px;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 12px;
-      background: #1f2d3d;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    .hijri-actions button:hover {
-      background: #32435f;
-    }
-
-    .card {
-      background: white;
-      border-radius: 16px;
-      padding: 15px;
-      margin-bottom: 15px;
-      box-shadow: 0 4px 12px rgba(0,0,0,.12);
-      text-align: center;
-      font-size: 18px;
-    }
-  </style>
+/* Modal */
+.modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.5);
+  justify-content:center;
+  align-items:center;
+}
+.modal-content{
+  background:#fff3c4;
+  padding:20px;
+  border-radius:16px;
+  width:90%;
+  max-width:350px;
+  text-align:center;
+}
+select,input{
+  padding:8px;
+  border-radius:8px;
+  font-size:15px;
+}
+</style>
 </head>
 
 <body>
 
-  <!-- اسم التطبيق -->
-  <header>
-    ✨ مواقيتي ✨
-  </header>
+<header>✨ مواقيتي ✨</header>
 
-  <div class="container">
+<div class="container">
 
-    <!-- التاريخ الهجري -->
-    <div class="hijri-box">
-      <div id="hijriText">جاري تحميل التاريخ...</div>
-      <div class="hijri-actions">
-        <button onclick="setHijri(0)">اليوم</button>
-        <button onclick="setHijri(1)">غدًا</button>
-      </div>
-    </div>
+<select id="citySelect" onchange="render()">
+  <option value="Makkah">مكة</option>
+  <option value="Riyadh">الرياض</option>
+  <option value="Jeddah">جدة</option>
+  <option value="Dammam">الدمام</option>
+  <option value="Abha">أبها</option>
+</select>
 
-    <!-- مكان مؤقت لباقي الميزات -->
-    <div class="card">🕋 القبلة (قريبًا)</div>
-    <div class="card">⏰ مواقيت الصلاة (قريبًا)</div>
-    <div class="card">📿 الأذكار (قريبًا)</div>
-    <div class="card">📖 القرآن الكريم (قريبًا)</div>
+<br><br>
+<button onclick="openModal()">📅 اختيار التاريخ</button>
 
+<div class="card" id="hijriDate"></div>
+<div class="card" id="prayers"></div>
+<div id="countdown"></div>
+
+</div>
+
+<!-- Modal -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <h3>اختر التاريخ</h3>
+    <input type="date" id="dateInput">
+    <br><br>
+    <button onclick="applyDate()">تم</button>
+    <button onclick="closeModal()">إلغاء</button>
   </div>
+</div>
 
-  <script>
-    function setHijri(addDays = 0) {
-      const date = new Date();
-      date.setDate(date.getDate() + addDays);
+<script>
+let selectedDate = new Date();
+let countdownInterval;
 
-      const formatter = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'numeric',
-        year: 'numeric'
-      });
+function openModal(){ document.getElementById("modal").style.display="flex"; }
+function closeModal(){ document.getElementById("modal").style.display="none"; }
 
-      document.getElementById("hijriText").innerText = formatter.format(date);
+function applyDate(){
+  const v = document.getElementById("dateInput").value;
+  if(v){ selectedDate = new Date(v); render(); }
+  closeModal();
+}
+
+function hijriText(date){
+  return new Intl.DateTimeFormat('ar-SA-u-ca-islamic',{
+    weekday:'long', day:'numeric', month:'long', year:'numeric'
+  }).format(date);
+}
+
+async function render(){
+  clearInterval(countdownInterval);
+
+  document.getElementById("hijriDate").innerText =
+    "📆 " + hijriText(selectedDate);
+
+  const city = citySelect.value;
+  const d = selectedDate.getDate();
+  const m = selectedDate.getMonth()+1;
+  const y = selectedDate.getFullYear();
+
+  const res = await fetch(
+    `https://api.aladhan.com/v1/calendarByCity?city=${city}&country=Saudi Arabia&method=4&month=${m}&year=${y}`
+  );
+  const data = await res.json();
+  const t = data.data[d-1].timings;
+
+  const prayers = [
+    {n:"الفجر", t:t.Fajr},
+    {n:"الظهر", t:t.Dhuhr},
+    {n:"العصر", t:t.Asr},
+    {n:"المغرب", t:t.Maghrib},
+    {n:"العشاء", t:t.Isha}
+  ];
+
+  const list = document.getElementById("prayers");
+  list.innerHTML = "<h3>🕌 مواقيت الصلاة</h3>";
+
+  const now = new Date();
+  let nextTime=null, nextName="";
+
+  prayers.forEach(p=>{
+    const div=document.createElement("div");
+    div.className="prayer";
+    const [h,m]=p.t.split(":");
+    const pt=new Date(selectedDate);
+    pt.setHours(h,m,0);
+
+    if(!nextTime && pt>now && selectedDate.toDateString()===now.toDateString()){
+      div.classList.add("next");
+      nextTime=pt; nextName=p.n;
     }
+    div.innerHTML=`<span>${p.n}</span><span>${p.t}</span>`;
+    list.appendChild(div);
+  });
 
-    // تشغيل تلقائي
-    setHijri(0);
-  </script>
+  if(nextTime){
+    countdownInterval=setInterval(()=>{
+      const diff=nextTime-new Date();
+      if(diff<=0){ clearInterval(countdownInterval); render(); return; }
+      const h=Math.floor(diff/3600000);
+      const m=Math.floor((diff%3600000)/60000);
+      const s=Math.floor((diff%60000)/1000);
+      countdown.innerText=`الصلاة القادمة (${nextName}) بعد ${h}:${m}:${s}`;
+    },1000);
+  }else{
+    countdown.innerText="لا توجد صلاة قادمة اليوم";
+  }
+}
+
+render();
+</script>
 
 </body>
 </html>
