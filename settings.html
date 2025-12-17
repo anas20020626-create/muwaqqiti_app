@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>الإعدادات – مواقيتي</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+    margin: 0;
+    font-family: Tahoma, Arial;
+    background: #f6e8b1;
+    color: #1f2d3d;
+}
+
+header {
+    background: #1f2d3d;
+    color: #d4af37;
+    text-align: center;
+    padding: 15px;
+    font-size: 22px;
+}
+
+.container {
+    max-width: 500px;
+    margin: auto;
+    padding: 15px;
+}
+
+.card {
+    background: white;
+    border-radius: 14px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.btn {
+    width: 100%;
+    padding: 10px;
+    background: #1f2d3d;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.switch {
+    float: left;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    الإعدادات
+</header>
+
+<div class="container">
+
+    <!-- المظهر -->
+    <div class="card">
+        <h3>🌗 المظهر</h3>
+        <label>
+            <input type="radio" name="theme" onclick="setTheme('light')" checked>
+            الوضع الفاتح
+        </label><br><br>
+        <label>
+            <input type="radio" name="theme" onclick="setTheme('dark')">
+            الوضع الداكن
+        </label>
+    </div>
+
+    <!-- التنبيهات -->
+    <div class="card">
+        <h3>⏰ التنبيهات</h3>
+        <label>
+            <input type="checkbox" onchange="saveNotif(this)">
+            تفعيل تنبيه الصلاة القادمة
+        </label>
+        <p style="font-size:13px;color:#555;">
+            (تنبيه بسيط قبل وقت الصلاة)
+        </p>
+    </div>
+
+    <!-- الموقع -->
+    <div class="card">
+        <h3>📍 الموقع</h3>
+        <p>تحديد الموقع: تلقائي</p>
+        <button class="btn">تغيير المدينة (لاحقًا)</button>
+    </div>
+
+    <!-- عن التطبيق -->
+    <div class="card">
+        <h3>ℹ️ عن التطبيق</h3>
+        <p><strong>مواقيتي</strong></p>
+        <p>تطبيق لعرض مواقيت الصلاة والتاريخ الهجري</p>
+        <p>مشروع مدرسي</p>
+        <p>المطورون:</p>
+        <ul>
+            <li>أنس الشهراني</li>
+            <li>مسفر الشهراني</li>
+            <li>سعيد الأحمري</li>
+        </ul>
+    </div>
+
+    <button class="btn" onclick="history.back()">رجوع</button>
+
+</div>
+
+<script>
+function setTheme(mode) {
+    if (mode === "dark") {
+        document.body.style.background = "#1f2d3d";
+        document.body.style.color = "#d4af37";
+        localStorage.setItem("theme", "dark");
+    } else {
+        document.body.style.background = "#f6e8b1";
+        document.body.style.color = "#1f2d3d";
+        localStorage.setItem("theme", "light");
+    }
+}
+
+function saveNotif(el) {
+    localStorage.setItem("notif", el.checked);
+}
+</script>
+
+</body>
+</html>
