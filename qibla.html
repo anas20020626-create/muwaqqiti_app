@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>القبلة | مواقيتي</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- خط عربي -->
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      background: #f6e8b1;
+      font-family: "Amiri", serif;
+      text-align: center;
+    }
+
+    header {
+      background: #1f2f3f;
+      padding: 20px;
+    }
+
+    header h1 {
+      color: #d4af37;
+      font-size: 30px;
+      margin: 0;
+      letter-spacing: 3px;
+    }
+
+    .card {
+      background: white;
+      margin: 20px;
+      padding: 20px;
+      border-radius: 18px;
+    }
+
+    #compass {
+      width: 260px;
+      height: 260px;
+      border: 8px solid #1f2f3f;
+      border-radius: 50%;
+      margin: 0 auto 20px;
+      position: relative;
+    }
+
+    #arrow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform-origin: bottom center;
+      transform: translate(-50%, -100%);
+      font-size: 70px;
+      color: #d4af37;
+    }
+
+    .text {
+      font-size: 18px;
+      color: #1f2f3f;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>القبلة</h1>
+</header>
+
+<div class="card">
+  <div id="compass">
+    <div id="arrow">▲</div>
+  </div>
+
+  <p class="text" id="status">جاري تحديد اتجاه القبلة...</p>
+</div>
+
+<script>
+  const KAABA_LAT = 21.4225;
+  const KAABA_LON = 39.8262;
+
+  function getQiblaDirection(lat, lon) {
+    const toRad = d => d * Math.PI / 180;
+    const toDeg = r => r * 180 / Math.PI;
+
+    const dLon = toRad(KAABA_LON - lon);
+    const y = Math.sin(dLon);
+    const x =
+      Math.cos(toRad(lat)) * Math.tan(toRad(KAABA_LAT)) -
+      Math.sin(toRad(lat)) * Math.cos(dLon);
+
+    return (toDeg(Math.atan2(y, x)) + 360) % 360;
+  }
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(position => {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+      const qiblaDirection = getQiblaDirection(lat, lon);
+
+      if (window.DeviceOrientationEvent) {
+        window.addEventListener("deviceorientation", event => {
+          if (event.alpha === null) return;
+
+          const rotation = qiblaDirection - event.alpha;
+          const arrow = document.getElementById("arrow");
+          arrow.style.transform =
+            `translate(-50%, -100%) rotate(${rotation}deg)`;
+
+          document.getElementById("status").textContent =
+            "حرّك الهاتف حتى يشير السهم للأعلى";
+
+          if (Math.abs(rotation) < 5 && navigator.vibrate) {
+            navigator.vibrate(200);
+          }
+        });
+      } else {
+        document.getElementById("status").textContent =
+          "الجهاز لا يدعم البوصلة";
+      }
+    }, () => {
+      document.getElementById("status").textContent =
+        "لم يتم السماح بالموقع";
+    });
+  }
+</script>
+
+</body>
+</html>
